@@ -3,35 +3,53 @@ import 'package:flutter/material.dart';
 
 import 'finance.dart';
 
+const goldenRatio = 17;
+
 double calculateCostPerLiquidWeight(double cost, double liquidWeight) {
   return cost / liquidWeight;
 }
 
-double coffeeLiquidPerCoffeeGrounds(double grounds) {
-  const goldenRatio = 17;
+double coffeeLiquidPerCoffeeGrounds(double grounds,
+    {groundToLiquidRatio = goldenRatio}) {
   return grounds * goldenRatio;
 }
 
+double costPerOz(double costOfGrounds, double weightOfGroundsInOz,
+    {groundToLiquidRatio = goldenRatio}) {
+  return calculateCostPerLiquidWeight(
+      costOfGrounds,
+      coffeeLiquidPerCoffeeGrounds(weightOfGroundsInOz,
+          groundToLiquidRatio: groundToLiquidRatio));
+}
 
-LineChartBarData starbucksLineData(ThemeData themeData) {
-  const costOfStarbucks12oz = 2.65;
-  var costOfStarbucksPerOz =
-  calculateCostPerLiquidWeight(costOfStarbucks12oz, 12);
-  var costOfStarbucksPerYear = costOfStarbucks12oz * 365;
+double costPer12oz(double costOfGrounds, double weightOfGroundsInOz,
+    {groundToLiquidRatio = goldenRatio}) {
+  return costPerOz(costOfGrounds, weightOfGroundsInOz,
+          groundToLiquidRatio: groundToLiquidRatio) *
+      12;
+}
 
-  List<FlSpot> dataSpots = generateCompoundInterestData(costOfStarbucksPerYear);
+double costOfDaily12ozPerYear(double costOfGrounds, double weightOfGroundsInOz,
+    {groundToLiquidRatio = goldenRatio, daysInYear = 365}) {
+  return costPer12oz(costOfGrounds, weightOfGroundsInOz,
+          groundToLiquidRatio: groundToLiquidRatio) *
+      daysInYear;
+}
+
+LineChartBarData starbucksStoreLineData(ThemeData themeData) {
+  const costOf12oz = 2.65;
+  var costPerYear = costOf12oz * 365;
+
+  List<FlSpot> dataSpots = generateCompoundInterestData(costPerYear);
 
   return LineChartBarData(color: Colors.green, spots: dataSpots);
 }
 
 LineChartBarData dunkinLineData(ThemeData themeData) {
-  const costOfDunkinPer30ozGrounds = 16.14;
-  var costOfDunkin12oz = calculateCostPerLiquidWeight(
-      costOfDunkinPer30ozGrounds, coffeeLiquidPerCoffeeGrounds(30)) *
-      12;
-  var costOfDunkinPerYear = costOfDunkin12oz * 365;
+  const costPer30ozGrounds = 16.14;
+  var costPerYear = costOfDaily12ozPerYear(costPer30ozGrounds, 30);
 
-  List<FlSpot> dataSpots = generateCompoundInterestData(costOfDunkinPerYear);
+  List<FlSpot> dataSpots = generateCompoundInterestData(costPerYear);
 
   return LineChartBarData(
     color: Colors.orange,
@@ -41,11 +59,19 @@ LineChartBarData dunkinLineData(ThemeData themeData) {
 
 LineChartBarData nightSwimLineData(ThemeData themeData) {
   const costPer12ozGrounds = 19.00;
-  var costOf12oz = calculateCostPerLiquidWeight(
-    costPer12ozGrounds,
-    coffeeLiquidPerCoffeeGrounds(12),
-  ) * 12;
-  var costPerYear = costOf12oz * 365;
+  var costPerYear = costOfDaily12ozPerYear(costPer12ozGrounds, 12);
+
+  List<FlSpot> dataSpots = generateCompoundInterestData(costPerYear);
+
+  return LineChartBarData(
+    color: const Color(0xff202a44),
+    spots: dataSpots,
+  );
+}
+
+LineChartBarData maxwellHouseLineData(ThemeData themeData) {
+  const costPer30_6ozGrounds = 8.53;
+  var costPerYear = costOfDaily12ozPerYear(costPer30_6ozGrounds, 30.6);
 
   List<FlSpot> dataSpots = generateCompoundInterestData(costPerYear);
 
