@@ -5,8 +5,10 @@ class ScaffoldBuilder extends StatelessWidget {
 
   final String widgetTitle;
 
+  final void Function()? onNextPressed;
+
   const ScaffoldBuilder(
-      {super.key, required this.body, required this.widgetTitle});
+      {super.key, required this.body, required this.widgetTitle, this.onNextPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +20,10 @@ class ScaffoldBuilder extends StatelessWidget {
         title: Text(widgetTitle),
       ),
       body: body,
+      floatingActionButton: onNextPressed != null ? FloatingActionButton.small(
+        onPressed: onNextPressed,
+        child: const Icon(Icons.navigate_next)
+      ) : null,
     );
   }
 }

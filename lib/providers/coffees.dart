@@ -12,6 +12,10 @@ class CoffeesNotifier extends StateNotifier<List<Coffee>> {
   void addCoffee(Coffee coffee) {
     state = [...state, coffee];
   }
+
+  void setCoffees(List<Coffee> coffees) {
+    state = [...coffees];
+  }
 }
 
 final coffeesProvider =
@@ -31,10 +35,6 @@ final coffeesProvider =
         costPerOz: dunkinPerOz,
         data: createLineData(dunkinPerOz, Colors.orange)),
     Coffee(
-        name: 'Night Swim',
-        costPerOz: nightSwimPerOz,
-        data: createLineData(nightSwimPerOz, const Color(0xff202a44))),
-    Coffee(
         name: 'Maxwell',
         costPerOz: maxwellPerOz,
         data: createLineData(maxwellPerOz, Colors.blue)),
@@ -42,10 +42,11 @@ final coffeesProvider =
 });
 
 class Coffee {
-  const Coffee(
-      {required this.name, required this.costPerOz, required this.data});
+  Coffee(
+      {required this.name, required this.costPerOz, required this.data, this.rating});
 
   final String name;
   final double costPerOz;
   final LineChartBarData data;
+  double? rating;
 }
