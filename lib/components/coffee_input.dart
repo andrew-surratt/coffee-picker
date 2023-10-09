@@ -1,5 +1,5 @@
 import 'package:coffee_picker/components/scaffold.dart';
-import 'package:coffee_picker/components/price_chart.dart';
+import 'package:coffee_picker/components/comparison_chart.dart';
 import 'package:coffee_picker/providers/coffees.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -87,8 +87,12 @@ class CoffeeInput extends ConsumerWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) =>
-                              PriceChart(widgetTitle: widgetTitle)),
+                          builder: (context) => ComparisonChart(
+                                widgetTitle: widgetTitle,
+                                chartComponents: [
+                                  ChartComponent(ComponentName.price)
+                                ],
+                              )),
                     );
                   },
                   child: const Text('Submit'),

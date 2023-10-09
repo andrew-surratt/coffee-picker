@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class PriceChart extends ConsumerWidget {
+class ComparisonChart extends ConsumerWidget {
   final String widgetTitle;
+  final List<ChartComponent> chartComponents;
 
-  const PriceChart({super.key, required this.widgetTitle});
+  const ComparisonChart(
+      {super.key, required this.widgetTitle, required this.chartComponents});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -15,8 +17,13 @@ class PriceChart extends ConsumerWidget {
     final coffeeData = ref.watch(coffeesProvider);
 
     LineTouchData lineTouchData = buildLineTouchData(themeData, coffeeData);
-    LineChart lineChart =
-        buildLineChart(lineTouchData, themeData, context, coffeeData);
+    LineChart lineChart = buildLineChart(
+        lineTouchData: lineTouchData,
+        flBorderData: buildFlBorderData(themeData),
+        themeData: themeData,
+        context: context,
+        chartComponent: chartComponents,
+        coffeeData: coffeeData);
     return ScaffoldBuilder(
         body: Padding(
             padding: const EdgeInsets.fromLTRB(20, 40, 40, 20),
@@ -25,8 +32,30 @@ class PriceChart extends ConsumerWidget {
   }
 }
 
-LineChart buildLineChart(LineTouchData lineTouchData, ThemeData themeData,
-    BuildContext context, List<Coffee> coffeeData) {
+class ChartComponent {
+  ComponentName componentName;
+
+  ChartComponent(this.componentName);
+}
+
+enum ComponentName {
+  price,
+  rating,
+}
+
+LineChart buildLineChart(
+    {required LineTouchData lineTouchData,
+    required FlBorderData flBorderData,
+    required ThemeData themeData,
+    required BuildContext context,
+    required List<ChartComponent> chartComponent,
+    required List<Coffee> coffeeData}) {
+  var data = chartComponent.map<List<LineChartBarData>>((ChartComponent e) => switch (e.componentName) {
+    ComponentName.price => coffeeData.map((e) => e.data).toList(),
+      _ => List<LineChartBarData>.empty(),
+    }
+  ).expand((List<LineChartBarData> element) => element).toList();
+
   return LineChart(LineChartData(
       minX: 0,
       maxX: 10,
@@ -34,17 +63,21 @@ LineChart buildLineChart(LineTouchData lineTouchData, ThemeData themeData,
       maxY: 20000,
       lineTouchData: lineTouchData,
       titlesData: buildFlTitlesData(themeData, context),
-      borderData: FlBorderData(
-        show: true,
-        border: Border(
-          bottom: BorderSide(color: themeData.primaryColorDark),
-          left: BorderSide(color: themeData.primaryColorDark),
-          right: const BorderSide(color: Colors.transparent),
-          top: const BorderSide(color: Colors.transparent),
-        ),
-      ),
+      borderData: flBorderData,
       gridData: const FlGridData(show: false),
-      lineBarsData: coffeeData.map((e) => e.data).toList()));
+      lineBarsData: data));
+}
+
+FlBorderData buildFlBorderData(ThemeData themeData) {
+  return FlBorderData(
+    show: true,
+    border: Border(
+      bottom: BorderSide(color: themeData.primaryColorDark),
+      left: BorderSide(color: themeData.primaryColorDark),
+      right: const BorderSide(color: Colors.transparent),
+      top: const BorderSide(color: Colors.transparent),
+    ),
+  );
 }
 
 FlTitlesData buildFlTitlesData(ThemeData themeData, BuildContext context) {
