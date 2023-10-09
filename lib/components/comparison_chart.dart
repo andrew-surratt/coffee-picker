@@ -1,3 +1,4 @@
+import 'package:coffee_picker/components/rating_input.dart';
 import 'package:coffee_picker/components/scaffold.dart';
 import 'package:coffee_picker/providers/coffees.dart';
 import 'package:flutter/material.dart';
@@ -25,10 +26,15 @@ class ComparisonChart extends ConsumerWidget {
         chartComponent: chartComponents,
         coffeeData: coffeeData);
     return ScaffoldBuilder(
-        body: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 40, 40, 20),
-            child: lineChart),
-        widgetTitle: widgetTitle);
+      body: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 40, 40, 20), child: lineChart),
+      widgetTitle: widgetTitle,
+      onNextPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => RatingInput(widgetTitle: widgetTitle),
+          )),
+    );
   }
 }
 
@@ -50,11 +56,16 @@ LineChart buildLineChart(
     required BuildContext context,
     required List<ChartComponent> chartComponent,
     required List<Coffee> coffeeData}) {
-  var data = chartComponent.map<List<LineChartBarData>>((ChartComponent e) => switch (e.componentName) {
-    ComponentName.price => coffeeData.map((e) => e.data).toList(),
-      _ => List<LineChartBarData>.empty(),
-    }
-  ).expand((List<LineChartBarData> element) => element).toList();
+  List<LineChartBarData> data = coffeeData.map((e) {
+                    var rating = e.rating;
+                    const maxAlpha = 255;
+                    const minAlpha = 100;
+                    const maxRating = 10;
+                    return e.data.copyWith(
+                      color: chartComponent.any((c) => c.componentName == ComponentName.rating) && rating != null ?
+                      e.data.color?.withAlpha((rating * (maxAlpha - minAlpha) / maxRating + minAlpha).truncate()) : e.data.color,
+                    );
+                  }).toList();
 
   return LineChart(LineChartData(
       minX: 0,
@@ -113,18 +124,19 @@ LineTouchData buildLineTouchData(ThemeData themeData, List<Coffee> coffeeData) {
   return LineTouchData(
     handleBuiltInTouches: true,
     touchTooltipData: LineTouchTooltipData(
-        maxContentWidth: 200,
+        maxContentWidth: 300,
         tooltipBgColor: themeData.scaffoldBackgroundColor.withOpacity(0.2),
         fitInsideHorizontally: true,
+        fitInsideVertically: true,
         getTooltipItems: (List<LineBarSpot> touchedSpots) {
           return touchedSpots.map((LineBarSpot touchedSpot) {
-            var coffeeDataSelected = coffeeData[touchedSpot.barIndex];
+            var coffeeDataSelected = coffeeData[touchedSpot.barIndex % 4];
             return LineTooltipItem(
                 "${coffeeDataSelected.name} \$${touchedSpot.y.toString()} (\$${coffeeDataSelected.costPerOz}/oz)",
                 TextStyle(
                   color: touchedSpot.bar.gradient?.colors.first ??
                       touchedSpot.bar.color ??
-                      Colors.blueGrey,
+                      themeData.colorScheme.primary,
                 ));
           }).toList();
         }),
