@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:fl_chart/fl_chart.dart';
 
+const double sp500AvgYearlyReturn = 0.08;
+
 double calculateCompoundInterest(
   double principal,
   double annualRate,
@@ -16,7 +18,7 @@ double toPrecision(double value, {int precision = 2}) {
 }
 
 double calculateYearlyCompoundInterestSP500(double principal,
-    {avgTotalYearlyReturn = 0.1}) {
+    {avgTotalYearlyReturn = sp500AvgYearlyReturn}) {
   return toPrecision(
       calculateCompoundInterest(principal, avgTotalYearlyReturn, 12, 1));
 }

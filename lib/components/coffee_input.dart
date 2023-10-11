@@ -1,5 +1,5 @@
 import 'package:coffee_picker/components/scaffold.dart';
-import 'package:coffee_picker/components/price_chart.dart';
+import 'package:coffee_picker/components/comparison_chart.dart';
 import 'package:coffee_picker/providers/coffees.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../services/coffee.dart';
 import '../services/finance.dart';
+import '../utils/forms.dart';
 
 class CoffeeInput extends ConsumerWidget {
   final String widgetTitle;
@@ -27,45 +28,20 @@ class CoffeeInput extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              TextFormField(
+              buildFormFieldText(
                 controller: name,
-                decoration: const InputDecoration(
-                  hintText: 'Coffee Name',
-                ),
-                validator: (String? value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter some text';
-                  }
-                  return null;
-                },
+                hint: 'Coffee Name',
+                validationText: 'Please enter a coffee'
               ),
-              TextFormField(
+              buildFormFieldDouble(
                 controller: cost,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                  hintText: 'Cost of beans/grounds',
-                ),
-                validator: (String? value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter an amount';
-                  }
-                  return null;
-                },
+                hint: 'Cost of beans/grounds',
+                validationText: 'Please enter an amount',
               ),
-              TextFormField(
+              buildFormFieldDouble(
                 controller: weight,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                  hintText: 'Weight of beans/grounds (oz)',
-                ),
-                validator: (String? value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter an amount';
-                  }
-                  return null;
-                },
+                hint: 'Weight of beans/grounds (oz)',
+                validationText: 'Please enter an amount',
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -87,8 +63,12 @@ class CoffeeInput extends ConsumerWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) =>
-                              PriceChart(widgetTitle: widgetTitle)),
+                          builder: (context) => ComparisonChart(
+                                widgetTitle: widgetTitle,
+                                chartComponents: [
+                                  ChartComponent(ComponentName.price)
+                                ],
+                              )),
                     );
                   },
                   child: const Text('Submit'),
@@ -99,4 +79,5 @@ class CoffeeInput extends ConsumerWidget {
         ));
     return ScaffoldBuilder(body: inputForm, widgetTitle: widgetTitle);
   }
+
 }

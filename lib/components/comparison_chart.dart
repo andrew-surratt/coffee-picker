@@ -1,13 +1,16 @@
+import 'package:coffee_picker/components/rating_input.dart';
 import 'package:coffee_picker/components/scaffold.dart';
 import 'package:coffee_picker/providers/coffees.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class PriceChart extends ConsumerWidget {
+class ComparisonChart extends ConsumerWidget {
   final String widgetTitle;
+  final List<ChartComponent> chartComponents;
 
-  const PriceChart({super.key, required this.widgetTitle});
+  const ComparisonChart(
+      {super.key, required this.widgetTitle, required this.chartComponents});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -15,18 +18,55 @@ class PriceChart extends ConsumerWidget {
     final coffeeData = ref.watch(coffeesProvider);
 
     LineTouchData lineTouchData = buildLineTouchData(themeData, coffeeData);
-    LineChart lineChart =
-        buildLineChart(lineTouchData, themeData, context, coffeeData);
+    LineChart lineChart = buildLineChart(
+        lineTouchData: lineTouchData,
+        flBorderData: buildFlBorderData(themeData),
+        themeData: themeData,
+        context: context,
+        chartComponent: chartComponents,
+        coffeeData: coffeeData);
     return ScaffoldBuilder(
-        body: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 40, 40, 20),
-            child: lineChart),
-        widgetTitle: widgetTitle);
+      body: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 40, 40, 20), child: lineChart),
+      widgetTitle: widgetTitle,
+      onNextPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => RatingInput(widgetTitle: widgetTitle),
+          )),
+    );
   }
 }
 
-LineChart buildLineChart(LineTouchData lineTouchData, ThemeData themeData,
-    BuildContext context, List<Coffee> coffeeData) {
+class ChartComponent {
+  ComponentName componentName;
+
+  ChartComponent(this.componentName);
+}
+
+enum ComponentName {
+  price,
+  rating,
+}
+
+LineChart buildLineChart(
+    {required LineTouchData lineTouchData,
+    required FlBorderData flBorderData,
+    required ThemeData themeData,
+    required BuildContext context,
+    required List<ChartComponent> chartComponent,
+    required List<Coffee> coffeeData}) {
+  List<LineChartBarData> data = coffeeData.map((e) {
+                    var rating = e.rating;
+                    const maxAlpha = 255;
+                    const minAlpha = 100;
+                    const maxRating = 10;
+                    return e.data.copyWith(
+                      color: chartComponent.any((c) => c.componentName == ComponentName.rating) && rating != null ?
+                      e.data.color?.withAlpha((rating * (maxAlpha - minAlpha) / maxRating + minAlpha).truncate()) : e.data.color,
+                    );
+                  }).toList();
+
   return LineChart(LineChartData(
       minX: 0,
       maxX: 10,
@@ -34,17 +74,21 @@ LineChart buildLineChart(LineTouchData lineTouchData, ThemeData themeData,
       maxY: 20000,
       lineTouchData: lineTouchData,
       titlesData: buildFlTitlesData(themeData, context),
-      borderData: FlBorderData(
-        show: true,
-        border: Border(
-          bottom: BorderSide(color: themeData.primaryColorDark),
-          left: BorderSide(color: themeData.primaryColorDark),
-          right: const BorderSide(color: Colors.transparent),
-          top: const BorderSide(color: Colors.transparent),
-        ),
-      ),
+      borderData: flBorderData,
       gridData: const FlGridData(show: false),
-      lineBarsData: coffeeData.map((e) => e.data).toList()));
+      lineBarsData: data));
+}
+
+FlBorderData buildFlBorderData(ThemeData themeData) {
+  return FlBorderData(
+    show: true,
+    border: Border(
+      bottom: BorderSide(color: themeData.primaryColorDark),
+      left: BorderSide(color: themeData.primaryColorDark),
+      right: const BorderSide(color: Colors.transparent),
+      top: const BorderSide(color: Colors.transparent),
+    ),
+  );
 }
 
 FlTitlesData buildFlTitlesData(ThemeData themeData, BuildContext context) {
@@ -80,18 +124,19 @@ LineTouchData buildLineTouchData(ThemeData themeData, List<Coffee> coffeeData) {
   return LineTouchData(
     handleBuiltInTouches: true,
     touchTooltipData: LineTouchTooltipData(
-        maxContentWidth: 200,
+        maxContentWidth: 300,
         tooltipBgColor: themeData.scaffoldBackgroundColor.withOpacity(0.2),
         fitInsideHorizontally: true,
+        fitInsideVertically: true,
         getTooltipItems: (List<LineBarSpot> touchedSpots) {
           return touchedSpots.map((LineBarSpot touchedSpot) {
-            var coffeeDataSelected = coffeeData[touchedSpot.barIndex];
+            var coffeeDataSelected = coffeeData[touchedSpot.barIndex % 4];
             return LineTooltipItem(
                 "${coffeeDataSelected.name} \$${touchedSpot.y.toString()} (\$${coffeeDataSelected.costPerOz}/oz)",
                 TextStyle(
                   color: touchedSpot.bar.gradient?.colors.first ??
                       touchedSpot.bar.color ??
-                      Colors.blueGrey,
+                      themeData.colorScheme.primary,
                 ));
           }).toList();
         }),
