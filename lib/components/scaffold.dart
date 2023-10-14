@@ -19,7 +19,7 @@ class ScaffoldBuilder extends StatelessWidget {
         backgroundColor: themeData.colorScheme.inversePrimary,
         title: Text(widgetTitle),
       ),
-      body: body,
+      body: Center(child: body),
       floatingActionButton: onNextPressed != null ? FloatingActionButton.small(
         onPressed: onNextPressed,
         child: const Icon(Icons.navigate_next)

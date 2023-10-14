@@ -25,7 +25,7 @@ class RatingInput extends ConsumerWidget {
       ...nameToControllers.map((e) => buildFormFieldDouble(
           controller: e.controller,
           hint: "Rating of ${e.coffeeName} 1-10",
-          validationText: 'Please enter a rating 1-10',
+          validationText: () => 'Please enter a rating 1-10',
         isInvalid: (value) => value < 1 || value > 10
       )),
       buildSubmitButton(ref, coffeeData, context)

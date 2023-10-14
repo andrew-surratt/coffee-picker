@@ -31,17 +31,17 @@ class CoffeeInput extends ConsumerWidget {
               buildFormFieldText(
                 controller: name,
                 hint: 'Coffee Name',
-                validationText: 'Please enter a coffee'
+                validationText: () => 'Please enter a coffee'
               ),
               buildFormFieldDouble(
                 controller: cost,
                 hint: 'Cost of beans/grounds',
-                validationText: 'Please enter an amount',
+                validationText: () => 'Please enter an amount',
               ),
               buildFormFieldDouble(
                 controller: weight,
                 hint: 'Weight of beans/grounds (oz)',
-                validationText: 'Please enter an amount',
+                validationText: () => 'Please enter an amount',
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
