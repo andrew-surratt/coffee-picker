@@ -1,6 +1,9 @@
-import 'package:coffee_picker/components/coffee_input.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'components/login.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
@@ -11,6 +14,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
     return MaterialApp(
       title: 'Coffee Picker',
       theme: ThemeData(
@@ -34,6 +40,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
-    return CoffeeInput(widgetTitle: widget.title);
+    return Login(title: widget.title);
   }
 }
