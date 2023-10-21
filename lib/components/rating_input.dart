@@ -1,46 +1,65 @@
 import 'package:coffee_picker/components/scaffold.dart';
 import 'package:coffee_picker/components/comparison_chart.dart';
-import 'package:coffee_picker/providers/coffees.dart';
+import 'package:coffee_picker/services/auth.dart';
 import 'package:coffee_picker/utils/forms.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class RatingInput extends ConsumerWidget {
-  final String widgetTitle;
+import '../repositories/coffees.dart';
+import '../repositories/ratings.dart';
 
-  RatingInput({super.key, required this.widgetTitle});
+class RatingInput extends ConsumerWidget {
+  RatingInput({super.key});
 
   final _formKey = GlobalKey<FormState>();
 
-  List<({String coffeeName, TextEditingController controller})>
-      nameToControllers = [];
+  List<
+      ({
+        String coffeeName,
+        TextEditingController controller,
+        String coffeeRef
+      })> nameToControllers = [];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final coffeeData = ref.watch(coffeesProvider);
-    nameToControllers = coffeeData
-        .map((e) => (coffeeName: e.name, controller: TextEditingController()))
+    Future<List<Coffee>> coffees = getCoffees();
+
+    return FutureBuilder(
+        future: coffees,
+        builder: (BuildContext context, AsyncSnapshot<List<Coffee>> snapshot) {
+          List<Coffee> coffees = snapshot.data ?? [];
+
+          List<Widget> formFields = buildFormFields(context, ref, coffees);
+
+          var inputForm = Padding(
+              padding: const EdgeInsets.all(40),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: formFields,
+                ),
+              ));
+          return ScaffoldBuilder(body: inputForm);
+        });
+  }
+
+  List<Widget> buildFormFields(BuildContext context, WidgetRef ref, List<Coffee> coffees) {
+    nameToControllers = coffees
+        .map((e) => (
+              coffeeName: e.name,
+              controller: TextEditingController(),
+              coffeeRef: e.ref
+            ))
         .toList();
-    List<Widget> formFields = [
+    return [
       ...nameToControllers.map((e) => buildFormFieldDouble(
           controller: e.controller,
           hint: "Rating of ${e.coffeeName} 1-10",
           validationText: () => 'Please enter a rating 1-10',
-        isInvalid: (value) => value < 1 || value > 10
-      )),
-      buildSubmitButton(ref, coffeeData, context)
+          isInvalid: (value) => value < 1 || value > 10)),
+      buildSubmitButton(ref, coffees, context)
     ];
-
-    var inputForm = Padding(
-        padding: const EdgeInsets.all(40),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: formFields,
-          ),
-        ));
-    return ScaffoldBuilder(body: inputForm, widgetTitle: widgetTitle);
   }
 
   Padding buildSubmitButton(
@@ -49,24 +68,18 @@ class RatingInput extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(vertical: 16.0),
       child: ElevatedButton(
         onPressed: () {
-          var coffeesNotifier = ref.read(coffeesProvider.notifier);
-          coffeesNotifier.setCoffees(coffeeData.map((e) {
-            var ratingInput = nameToControllers
-                .firstWhere((c) => c.coffeeName == e.name)
-                .controller
-                .text;
-            return Coffee(
-                name: e.name,
-                costPerOz: e.costPerOz,
-                data: e.data,
-                rating: double.parse(ratingInput));
-          }).toList());
+          var userId = getUser()?.uid ?? '';
+          for (var element in nameToControllers) {
+            addRating(Rating(
+                coffeeRef: element.coffeeRef,
+                userRef: userId,
+                rating: double.parse(element.controller.text)));
+          }
 
           Navigator.push(
             context,
             MaterialPageRoute(
                 builder: (context) => ComparisonChart(
-                      widgetTitle: widgetTitle,
                       chartComponents: [
                         ChartComponent(ComponentName.price),
                         ChartComponent(ComponentName.rating),

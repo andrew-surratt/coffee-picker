@@ -14,6 +14,10 @@ void useAuthState({void Function(User user)? onAuthChanged}) {
   });
 }
 
+User? getUser() {
+  return FirebaseAuth.instance.currentUser;
+}
+
 Future<UserCredential> signup(String emailAddress, String password) async {
   try {
     return await FirebaseAuth.instance.createUserWithEmailAndPassword(
