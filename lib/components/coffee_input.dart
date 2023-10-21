@@ -1,18 +1,15 @@
 import 'package:coffee_picker/components/scaffold.dart';
-import 'package:coffee_picker/components/comparison_chart.dart';
-import 'package:coffee_picker/providers/coffees.dart';
-import 'package:fl_chart/fl_chart.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../repositories/coffees.dart';
 import '../services/coffee.dart';
 import '../services/finance.dart';
 import '../utils/forms.dart';
 
 class CoffeeInput extends ConsumerWidget {
-  final String widgetTitle;
-
-  CoffeeInput({super.key, required this.widgetTitle});
+  CoffeeInput({super.key});
 
   final _formKey = GlobalKey<FormState>();
   final name = TextEditingController();
@@ -51,25 +48,12 @@ class CoffeeInput extends ConsumerWidget {
                     var weightValue = double.parse(weight.value.text);
                     var costPerOz =
                         toPrecision(calculateCostPerOz(costValue, weightValue));
-                    ref.read(coffeesProvider.notifier).addCoffee(Coffee(
+                    addCoffee(CoffeeCreateReq(
                         name: name.value.text,
                         costPerOz: costPerOz,
-                        data: LineChartBarData(
-                          color: const Color(0xff202a44),
-                          spots: generateCompoundInterestData(
-                              calculateCostPerYearFromOz(costPerOz)),
-                        )));
+                        ));
 
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => ComparisonChart(
-                                widgetTitle: widgetTitle,
-                                chartComponents: [
-                                  ChartComponent(ComponentName.price)
-                                ],
-                              )),
-                    );
+                    Navigator.pop(context);
                   },
                   child: const Text('Submit'),
                 ),
@@ -77,7 +61,7 @@ class CoffeeInput extends ConsumerWidget {
             ],
           ),
         ));
-    return ScaffoldBuilder(body: inputForm, widgetTitle: widgetTitle);
+    return ScaffoldBuilder(body: inputForm);
   }
 
 }

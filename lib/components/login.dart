@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:coffee_picker/components/coffee_input.dart';
 import 'package:coffee_picker/components/scaffold.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,9 +14,8 @@ enum LoginAction {
 }
 
 class Login extends ConsumerStatefulWidget {
-  Login({super.key, required this.title});
+  Login({super.key});
 
-  final String title;
   String usernameError = '';
   String passwordError = '';
 
@@ -82,7 +80,7 @@ class _LoginState extends ConsumerState<Login> {
             ],
           ),
         ));
-    return ScaffoldBuilder(body: inputForm, widgetTitle: widget.title);
+    return ScaffoldBuilder(body: inputForm);
   }
 
   void handleSwitchLoginAction() {
@@ -113,9 +111,7 @@ class _LoginState extends ConsumerState<Login> {
     Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (context) => CoffeeInput(
-                widgetTitle: widget.title,
-              )),
+          builder: (context) => CoffeeInput()),
     );
   }
 

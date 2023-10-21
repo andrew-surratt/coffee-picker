@@ -64,23 +64,3 @@ double calculateCostPerYear(double costPerDay,
 double calculateCostPerDay(double costPerOz,
         {numberOfOz = defaultNumberOfOzPerDay}) =>
     costPerOz * numberOfOz;
-
-double starbucksCostPerOz() {
-  const costOf12oz = 2.65;
-  return toPrecision(costOf12oz / 12);
-}
-
-double dunkinCostPerOz() {
-  const costPer30ozGrounds = 16.14;
-  return toPrecision(calculateCostPerOz(costPer30ozGrounds, 30));
-}
-
-double nightSwimCostPerOz() {
-  const costPer12ozGrounds = 19.00;
-  return toPrecision(calculateCostPerOz(costPer12ozGrounds, 12));
-}
-
-double maxwellHouseCostPerOz() {
-  const costPer30_6ozGrounds = 8.53;
-  return toPrecision(calculateCostPerOz(costPer30_6ozGrounds, 30.6));
-}

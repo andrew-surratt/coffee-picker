@@ -1,22 +1,44 @@
 import 'package:coffee_picker/components/rating_input.dart';
 import 'package:coffee_picker/components/scaffold.dart';
-import 'package:coffee_picker/providers/coffees.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../repositories/coffees.dart';
+import '../services/coffee.dart';
+
 class ComparisonChart extends ConsumerWidget {
-  final String widgetTitle;
   final List<ChartComponent> chartComponents;
 
-  const ComparisonChart(
-      {super.key, required this.widgetTitle, required this.chartComponents});
+  const ComparisonChart({super.key, required this.chartComponents});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeData = Theme.of(context);
-    final coffeeData = ref.watch(coffeesProvider);
+    Future<List<Coffee>> coffees = getCoffees();
 
+    return FutureBuilder(
+        future: coffees,
+        builder: (BuildContext context, AsyncSnapshot<List<Coffee>> snapshot) {
+          return ScaffoldBuilder(
+              body: buildChartBody(
+                  flBorderData: buildFlBorderData(themeData),
+                  themeData: themeData,
+                  context: context,
+                  chartComponent: chartComponents,
+                  coffeeData: snapshot.data ?? []),
+              floatingActionButton: buildFloatingActionButton(context)
+          );
+        });
+  }
+
+  Padding buildChartBody({
+    required FlBorderData flBorderData,
+    required ThemeData themeData,
+    required BuildContext context,
+    required List<ChartComponent> chartComponent,
+    required List<Coffee> coffeeData}
+      ) {
     LineTouchData lineTouchData = buildLineTouchData(themeData, coffeeData);
     LineChart lineChart = buildLineChart(
         lineTouchData: lineTouchData,
@@ -25,16 +47,19 @@ class ComparisonChart extends ConsumerWidget {
         context: context,
         chartComponent: chartComponents,
         coffeeData: coffeeData);
-    return ScaffoldBuilder(
-      body: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 40, 40, 20), child: lineChart),
-      widgetTitle: widgetTitle,
-      onNextPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => RatingInput(widgetTitle: widgetTitle),
-          )),
-    );
+    return Padding(
+          padding: const EdgeInsets.fromLTRB(20, 40, 40, 20),
+          child: lineChart);
+  }
+
+  FloatingActionButton buildFloatingActionButton(BuildContext context) {
+    return FloatingActionButton.small(
+          onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => RatingInput(),
+              )),
+          child: const Icon(Icons.navigate_next));
   }
 }
 
@@ -57,15 +82,21 @@ LineChart buildLineChart(
     required List<ChartComponent> chartComponent,
     required List<Coffee> coffeeData}) {
   List<LineChartBarData> data = coffeeData.map((e) {
-                    var rating = e.rating;
-                    const maxAlpha = 255;
-                    const minAlpha = 100;
-                    const maxRating = 10;
-                    return e.data.copyWith(
-                      color: chartComponent.any((c) => c.componentName == ComponentName.rating) && rating != null ?
-                      e.data.color?.withAlpha((rating * (maxAlpha - minAlpha) / maxRating + minAlpha).truncate()) : e.data.color,
-                    );
-                  }).toList();
+    var data = createLineData(e.costPerOz, Colors.green);
+    var rating = 5; //e.rating;
+    const maxAlpha = 255;
+    const minAlpha = 100;
+    const maxRating = 10;
+    return data.copyWith(
+      color:
+          chartComponent.any((c) => c.componentName == ComponentName.rating) &&
+                  rating != null
+              ? data.color?.withAlpha(
+                  (rating * (maxAlpha - minAlpha) / maxRating + minAlpha)
+                      .truncate())
+              : data.color,
+    );
+  }).toList();
 
   return LineChart(LineChartData(
       minX: 0,
