@@ -1,23 +1,28 @@
 import 'package:coffee_picker/components/scaffold.dart';
+import 'package:coffee_picker/repositories/taste_notes.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:textfield_tags/textfield_tags.dart';
 
 import '../repositories/coffees.dart';
 import '../services/coffee.dart';
 import '../services/finance.dart';
 import '../utils/forms.dart';
+import 'coffees.dart';
 
 class CoffeeInput extends ConsumerWidget {
   CoffeeInput({super.key});
 
   final _formKey = GlobalKey<FormState>();
   final name = TextEditingController();
+  final tasteNotes = TextfieldTagsController();
   final cost = TextEditingController();
   final weight = TextEditingController();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    var theme = Theme.of(context);
     var inputForm = Padding(
         padding: const EdgeInsets.all(40),
         child: Form(
@@ -26,10 +31,13 @@ class CoffeeInput extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               buildFormFieldText(
-                controller: name,
-                hint: 'Coffee Name',
-                validationText: () => 'Please enter a coffee'
-              ),
+                  controller: name,
+                  hint: 'Coffee Name',
+                  validationText: () => 'Please enter a coffee'),
+              buildMultiTagField(
+                  controller: tasteNotes,
+                  hintText: 'Tasting notes',
+                  tagColor: theme.primaryColor),
               buildFormFieldDouble(
                 controller: cost,
                 hint: 'Cost of beans/grounds',
@@ -51,9 +59,17 @@ class CoffeeInput extends ConsumerWidget {
                     addCoffee(CoffeeCreateReq(
                         name: name.value.text,
                         costPerOz: costPerOz,
-                        ));
+                        tastingNotes: tasteNotes.getTags ?? []));
 
-                    Navigator.pop(context);
+                    tasteNotes.getTags?.forEach((element) {
+                      addTastingNote(element);
+                    });
+
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const Coffees(),
+                        ));
                   },
                   child: const Text('Submit'),
                 ),
@@ -63,5 +79,4 @@ class CoffeeInput extends ConsumerWidget {
         ));
     return ScaffoldBuilder(body: inputForm);
   }
-
 }

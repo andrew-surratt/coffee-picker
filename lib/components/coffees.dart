@@ -5,11 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class Coffees extends ConsumerWidget {
-
   const Coffees({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    var theme = Theme.of(context);
     Future<List<Coffee>> coffees = getCoffees();
 
     return FutureBuilder(
@@ -17,28 +17,37 @@ class Coffees extends ConsumerWidget {
       builder: (BuildContext context, AsyncSnapshot<List<Coffee>> snapshot) {
         return ScaffoldBuilder(
             body: ListView.builder(
-                itemCount: snapshot.data?.length ?? 1,
-                prototypeItem: ListTile(title: Text(snapshot.data?.first.name ?? '')),
-                itemBuilder: (context, index) {
-                  var item = snapshot.data?[index];
-                  return ListTile(
-                      title: Text(item?.name ?? ''),
-                    subtitle: Text(item?.costPerOz.toString() ?? ''),
-                  );
-                },
+              itemCount: snapshot.data?.length ?? 1,
+              padding: const EdgeInsets.all(10),
+              prototypeItem:
+                  buildCard(theme, snapshot.data?.first.name ?? '', ''),
+              itemBuilder: (context, index) {
+                var item = snapshot.data?[index];
+                return buildCard(theme, item?.name ?? '',
+                    "Cost Per Oz: ${item?.costPerOz.toString() ?? ''}, Notes: ${item?.tastingNotes.join(',')}");
+              },
             ),
             floatingActionButton: FloatingActionButton.small(
-                onPressed: ()
-                =>
-                    Navigator.push(
+                onPressed: () => Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => CoffeeInput()),
-                    )
-                , child: const Icon(Icons.add)
-            )
-        );
+                      MaterialPageRoute(builder: (context) => CoffeeInput()),
+                    ),
+                child: const Icon(Icons.add)));
       },
+    );
+  }
+
+  Card buildCard(ThemeData theme, String title, String subtitle) {
+    return Card(
+      color: theme.cardColor,
+      child: InkWell(
+        splashColor: theme.primaryColor,
+        child: Flex(
+          direction: Axis.vertical,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [Text(title), Text(subtitle)],
+        ),
+      ),
     );
   }
 }
