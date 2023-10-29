@@ -69,43 +69,43 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
                   hint: 'Weight of beans/grounds (oz)',
                   validationText: () => 'Enter an amount');
             } else {
-              return Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: buildFormFieldText(
-                          controller: widget
-                              .originFields[index - startingFormFieldsCount]
-                              .origin,
-                          hint: 'Origin',
-                          validationText: () =>
-                              'Enter an origin country/city/farm'),
-                    ),
-                    Flexible(
-                      child: buildFormFieldDouble(
-                          controller: widget
-                              .originFields[index - startingFormFieldsCount]
-                              .originPercentage,
-                          hint: 'Percentage',
-                          validationText: () => 'Enter a percentage 1-100'),
-                    ),
-                    TextButton(
-                        onPressed: () {
-                          setState(() {
-                            widget.originFields
-                                .removeAt(index - startingFormFieldsCount);
-                          });
-                        },
-                        child: const Icon(Icons.close))
-                  ]);
+              return buildOriginField(index);
             }
           },
         ));
     return ScaffoldBuilder(
         body: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 200),
+            padding: const EdgeInsets.symmetric(horizontal: 100),
             child: inputForm));
+  }
+
+  Row buildOriginField(int index) {
+    return Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+      Expanded(
+        flex: 5,
+        child: buildFormFieldText(
+            controller:
+                widget.originFields[index - startingFormFieldsCount].origin,
+            hint: 'Origin',
+            validationText: () => 'Enter an origin country'),
+      ),
+      const Spacer(flex: 1),
+      Flexible(
+        flex: 2,
+        child: buildFormFieldDouble(
+            controller: widget
+                .originFields[index - startingFormFieldsCount].originPercentage,
+            hint: 'Percentage',
+            validationText: () => 'Enter a percentage 1-100'),
+      ),
+      TextButton(
+          onPressed: () {
+            setState(() {
+              widget.originFields.removeAt(index - startingFormFieldsCount);
+            });
+          },
+          child: const Icon(Icons.close))
+    ]);
   }
 
   Widget buildAddOriginButton(BuildContext context) {
