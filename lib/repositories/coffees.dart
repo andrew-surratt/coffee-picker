@@ -22,6 +22,7 @@ Future<List<Coffee>> getCoffees() async {
         name: data.name,
         costPerOz: data.costPerOz,
         tastingNotes: data.tastingNotes,
+        origins: data.origins,
       );
     }).toList();
     return coffees;
@@ -43,6 +44,10 @@ CoffeeCreateReq fromJson(Map<String, dynamic>? json) {
     name: json?['name'],
     costPerOz: json?['costPerOz'],
     tastingNotes: [...json?['tastingNotes']],
+    origins: [...(json?['origins'] ?? [])]
+        .map((e) =>
+            CoffeeOrigin(origin: e['origin'], percentage: e['percentage']))
+        .toList(),
   );
 }
 
@@ -51,18 +56,37 @@ Map<String, dynamic> toJson(CoffeeCreateReq coffee) {
     'name': coffee.name,
     'costPerOz': coffee.costPerOz,
     'tastingNotes': coffee.tastingNotes,
+    'origins': coffee.origins
+        .map((e) => {
+              'origin': e.origin,
+              'percentage': e.percentage,
+            })
+        .toList(),
   };
 }
 
+class CoffeeOrigin {
+  final String origin;
+  final double percentage;
+
+  CoffeeOrigin({
+    required this.origin,
+    required this.percentage,
+  });
+}
+
 class CoffeeCreateReq {
-  CoffeeCreateReq(
-      {required this.name,
-      required this.costPerOz,
-      required this.tastingNotes});
+  CoffeeCreateReq({
+    required this.name,
+    required this.costPerOz,
+    required this.tastingNotes,
+    required this.origins,
+  });
 
   final String name;
   final double costPerOz;
   final List<String> tastingNotes;
+  final List<CoffeeOrigin> origins;
 }
 
 class Coffee extends CoffeeCreateReq {
@@ -70,8 +94,13 @@ class Coffee extends CoffeeCreateReq {
     required name,
     required costPerOz,
     required tastingNotes,
+    required origins,
     required this.ref,
-  }) : super(name: name, costPerOz: costPerOz, tastingNotes: tastingNotes);
+  }) : super(
+            name: name,
+            costPerOz: costPerOz,
+            tastingNotes: tastingNotes,
+            origins: origins);
 
   final String ref;
 }

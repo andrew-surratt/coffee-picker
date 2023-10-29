@@ -31,7 +31,10 @@ class ScaffoldBuilder extends ConsumerWidget {
         backgroundColor: themeData.colorScheme.inversePrimary,
         title: Text(config.value?.title ?? defaultConfig.title),
       ),
-      body: Center(child: body),
+      body: Padding(
+        padding: const EdgeInsets.all(5),
+        child: Center(child: body),
+      ),
       floatingActionButton: floatingActionButton,
       drawer: buildDrawer(context),
     );
