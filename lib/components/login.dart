@@ -49,14 +49,16 @@ class _LoginState extends ConsumerState<Login> {
             children: [
               buildFormFieldText(
                   controller: usernameField,
-                  hint: 'Email',
+                  label: 'Email',
+                  hint: 'name@provider.com',
                   validationText: () => widget.usernameError,
                   emptyValidationText: 'Email is required.',
                   textInputType: TextInputType.emailAddress,
                   isInvalid: (_) => widget.usernameError.isNotEmpty),
               buildFormFieldText(
                   controller: passwordField,
-                  hint: 'Password',
+                  label: 'Password',
+                  hint: '***',
                   validationText: () => widget.passwordError,
                   emptyValidationText: 'Password is required.',
                   textInputType: TextInputType.visiblePassword,

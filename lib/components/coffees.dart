@@ -1,3 +1,4 @@
+import 'package:coffee_picker/components/coffee.dart';
 import 'package:coffee_picker/components/coffee_input.dart';
 import 'package:coffee_picker/components/scaffold.dart';
 import 'package:coffee_picker/repositories/coffees.dart';
@@ -9,7 +10,6 @@ class Coffees extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var theme = Theme.of(context);
     Future<List<Coffee>> coffees = getCoffees();
 
     return FutureBuilder(
@@ -19,12 +19,10 @@ class Coffees extends ConsumerWidget {
             body: ListView.builder(
               itemCount: snapshot.data?.length ?? 1,
               padding: const EdgeInsets.all(10),
-              prototypeItem:
-                  buildCard(theme, snapshot.data?.first.name ?? '', ''),
               itemBuilder: (context, index) {
-                var item = snapshot.data?[index];
-                return buildCard(theme, item?.name ?? '',
-                    "Cost Per Oz: ${item?.costPerOz.toString() ?? ''}, Notes: ${item?.tastingNotes.join(',')}");
+                Coffee? coffee = snapshot.data?[index];
+                return coffee != null ?
+                  buildCard(context, coffee) : null;
               },
             ),
             floatingActionButton: FloatingActionButton.small(
@@ -37,15 +35,28 @@ class Coffees extends ConsumerWidget {
     );
   }
 
-  Card buildCard(ThemeData theme, String title, String subtitle) {
+  Card buildCard(
+      BuildContext context,
+      Coffee coffee,
+      ) {
+    var theme = Theme.of(context);
     return Card(
       color: theme.cardColor,
       child: InkWell(
+        onTap: () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => CoffeeInfo(coffee: coffee)),
+          );
+        },
         splashColor: theme.primaryColor,
         child: Flex(
           direction: Axis.vertical,
           mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [Text(title), Text(subtitle)],
+          children: [
+            Text(coffee.name ?? ''),
+            Text("Cost Per Oz: ${coffee.costPerOz.toString() ?? ''}, Notes: ${coffee.tastingNotes.join(',')}"),
+          ],
         ),
       ),
     );

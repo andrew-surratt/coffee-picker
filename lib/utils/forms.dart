@@ -3,13 +3,15 @@ import 'package:textfield_tags/textfield_tags.dart';
 
 TextFormField buildFormFieldDouble({
   required TextEditingController controller,
+  required String label,
   required String hint,
-  required String Function() validationText,
+  String Function()? validationText,
   bool Function(double value)? isInvalid,
 }) {
   return buildTextFormField(
       controller: controller,
       textInputType: const TextInputType.numberWithOptions(decimal: true),
+      label: label,
       hint: hint,
       validationText: validationText,
       isInvalid: (value) {
@@ -20,8 +22,9 @@ TextFormField buildFormFieldDouble({
 
 TextFormField buildFormFieldText({
   required TextEditingController controller,
+  required String label,
   required String hint,
-  required String Function() validationText,
+  String Function()? validationText,
   String? emptyValidationText,
   TextInputType? textInputType,
   bool obscureText = false,
@@ -30,6 +33,7 @@ TextFormField buildFormFieldText({
   return buildTextFormField(
     controller: controller,
     hint: hint,
+    label: label,
     validationText: validationText,
     emptyValidationText: emptyValidationText,
     textInputType: textInputType,
@@ -40,8 +44,9 @@ TextFormField buildFormFieldText({
 
 TextFormField buildTextFormField({
   required TextEditingController controller,
+  required String label,
   required String hint,
-  required String Function() validationText,
+  String Function()? validationText,
   String? emptyValidationText,
   TextInputType? textInputType,
   bool obscureText = false,
@@ -52,11 +57,15 @@ TextFormField buildTextFormField({
     keyboardType: textInputType,
     obscureText: obscureText,
     decoration: InputDecoration(
+      border: const OutlineInputBorder(),
+      labelText: label,
       hintText: hint,
     ),
     autovalidateMode: AutovalidateMode.onUserInteraction,
     validator: (String? value) {
-      if (value == null || value.isEmpty) {
+      if (validationText == null) {
+        return null;
+      } else if (value == null || value.isEmpty) {
         return emptyValidationText ?? validationText();
       } else if (isInvalid != null && isInvalid(value)) {
         return validationText();

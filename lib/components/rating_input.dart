@@ -55,7 +55,8 @@ class RatingInput extends ConsumerWidget {
     return [
       ...nameToControllers.map((e) => buildFormFieldDouble(
           controller: e.controller,
-          hint: "Rating of ${e.coffeeName} 1-10",
+          label: "Rating of ${e.coffeeName} 1-10",
+          hint: '5',
           validationText: () => 'Please enter a rating 1-10',
           isInvalid: (value) => value < 1 || value > 10)),
       buildSubmitButton(ref, coffees, context)
@@ -68,13 +69,16 @@ class RatingInput extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(vertical: 16.0),
       child: ElevatedButton(
         onPressed: () {
-          var userId = getUser()?.uid ?? '';
-          for (var element in nameToControllers) {
-            addRating(Rating(
-                coffeeRef: element.coffeeRef,
-                userRef: userId,
-                rating: double.parse(element.controller.text)));
-          }
+          // var userId = getUser()?.uid ?? '';
+          // for (var element in nameToControllers) {
+          //   addRating(Rating(
+          //       rating: double.parse(element.controller.text),
+          //           review: ''
+          //   ),
+          //     element.coffeeRef,
+          //
+          //   );
+          // }
 
           Navigator.push(
             context,

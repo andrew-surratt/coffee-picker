@@ -74,14 +74,6 @@ class ScaffoldBuilder extends ConsumerWidget {
                           ])));
             },
           ),
-          ListTile(
-            title: const Text('Rate'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (context) => RatingInput()));
-            },
-          ),
         ],
       ),
     );
