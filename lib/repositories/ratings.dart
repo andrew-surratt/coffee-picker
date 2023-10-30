@@ -1,26 +1,47 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
-var ratingsCollection = FirebaseFirestore.instance.collection('ratings')
-    .withConverter(fromFirestore: (DocumentSnapshot<Map<String, dynamic>> snapshot, _) {
-  return fromJson(snapshot.data());
-}, toFirestore: (Rating rating, _) {
-  return toJson(rating);
-});
+import 'coffees.dart';
 
-Future<List<Rating>> getRatings(String userRef) async {
-  return await ratingsCollection.where('userRef', isEqualTo: userRef).get().then((event) {
-    if (kDebugMode) {
-      for (var doc in event.docs) {
-        print("${doc.id} => ${doc.data()}");
-      }
-    }
-    return event.docs.map((doc) => doc.data()).toList();
-  });
+var ratingsCollection = FirebaseFirestore.instance.collection('ratings');
+
+Future<List<Rating>> getUserRatings(Coffee coffee, User? user) async {
+  if (user == null) {
+    return [];
+  }
+  return await ratingsCollection
+      .doc(user.uid)
+      .collection(coffee.ref)
+      .withConverter(
+          fromFirestore: (DocumentSnapshot<Map<String, dynamic>> snapshot, _) {
+        return fromJson(snapshot.data());
+      }, toFirestore: (Rating rating, _) {
+        return toJson(rating);
+      })
+      .get()
+      .then((event) {
+        if (kDebugMode) {
+          for (var doc in event.docs) {
+            print("${doc.id} => ${doc.data()}");
+          }
+        }
+        return event.docs.map((doc) => doc.data()).toList();
+      });
 }
 
-Future<DocumentSnapshot<Rating>> addRating(Rating rating) async {
-  return await ratingsCollection.add(rating).then((event) {
+Future<DocumentSnapshot<Rating>> addRating(
+    Rating rating, Coffee coffee, User user) async {
+  var userRatings = ratingsCollection
+      .doc(user.uid)
+      .collection(coffee.ref)
+      .withConverter(
+          fromFirestore: (DocumentSnapshot<Map<String, dynamic>> snapshot, _) {
+    return fromJson(snapshot.data());
+  }, toFirestore: (Rating rating, _) {
+    return toJson(rating);
+  });
+  return await userRatings.add(rating).then((event) {
     if (kDebugMode) {
       print("${event.id} => ${event.path}");
     }
@@ -29,23 +50,22 @@ Future<DocumentSnapshot<Rating>> addRating(Rating rating) async {
 }
 
 Rating fromJson(Map<String, dynamic>? json) {
-  return Rating(coffeeRef: json?['coffeeRef'], userRef: json?['userRef'], rating: json?['rating']);
+  return Rating(
+    rating: json?['rating'],
+    review: json?['review'],
+  );
 }
 
 Map<String, dynamic> toJson(Rating rating) {
   return {
-    'coffeeRef': rating.coffeeRef,
-    'userRef': rating.userRef,
     'rating': rating.rating,
+    'review': rating.review,
   };
 }
 
 class Rating {
-  Rating(
-      {required this.coffeeRef, required this.userRef, required this.rating});
+  Rating({required this.rating, required this.review});
 
-  final String coffeeRef;
-  final String userRef;
   final double rating;
+  final String review;
 }
-

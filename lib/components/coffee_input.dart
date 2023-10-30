@@ -51,7 +51,8 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
             } else if (index == 0) {
               return buildFormFieldText(
                   controller: name,
-                  hint: 'Coffee Name',
+                  label: 'Coffee Name',
+                  hint: 'Tasty Coffee',
                   validationText: () => 'Enter a coffee');
             } else if (index == 1) {
               return buildMultiTagField(
@@ -61,12 +62,14 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
             } else if (index == 2) {
               return buildFormFieldDouble(
                   controller: cost,
-                  hint: 'Cost of beans/grounds',
+                  label: 'Cost of beans/grounds (\$)',
+                  hint: '20',
                   validationText: () => 'Enter an amount');
             } else if (index == 3) {
               return buildFormFieldDouble(
                   controller: weight,
-                  hint: 'Weight of beans/grounds (oz)',
+                  label: 'Weight of beans/grounds (oz)',
+                  hint: '10',
                   validationText: () => 'Enter an amount');
             } else {
               return buildOriginField(index);
@@ -86,7 +89,8 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
         child: buildFormFieldText(
             controller:
                 widget.originFields[index - startingFormFieldsCount].origin,
-            hint: 'Origin',
+            label: 'Origin',
+            hint: 'Brazil',
             validationText: () => 'Enter an origin country'),
       ),
       const Spacer(flex: 1),
@@ -95,7 +99,8 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
         child: buildFormFieldDouble(
             controller: widget
                 .originFields[index - startingFormFieldsCount].originPercentage,
-            hint: 'Percentage',
+            label: 'Percentage',
+            hint: '100',
             validationText: () => 'Enter a percentage 1-100'),
       ),
       TextButton(
