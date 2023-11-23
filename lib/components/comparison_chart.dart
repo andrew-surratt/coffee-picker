@@ -15,7 +15,11 @@ class ComparisonChart extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeData = Theme.of(context);
-    Future<List<Coffee>> coffees = getCoffees();
+    Future<List<Coffee>> coffees = getCoffees([
+      'Maxwell Medium',
+      'Starbucks (In Store)',
+      'Counter Culture Hologram',
+    ]);
 
     return FutureBuilder(
         future: coffees,

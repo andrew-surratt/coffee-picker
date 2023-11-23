@@ -1,12 +1,10 @@
 import 'package:coffee_picker/components/scaffold.dart';
 import 'package:coffee_picker/components/comparison_chart.dart';
-import 'package:coffee_picker/services/auth.dart';
 import 'package:coffee_picker/utils/forms.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../repositories/coffees.dart';
-import '../repositories/ratings.dart';
 
 class RatingInput extends ConsumerWidget {
   RatingInput({super.key});
@@ -22,7 +20,11 @@ class RatingInput extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    Future<List<Coffee>> coffees = getCoffees();
+    Future<List<Coffee>> coffees = getCoffees([
+      'Maxwell Medium',
+      'Starbucks (In Store)',
+      'Counter Culture Hologram',
+    ]);
 
     return FutureBuilder(
         future: coffees,

@@ -1,4 +1,4 @@
-import 'package:coffee_picker/components/coffee_input.dart';
+import 'package:coffee_picker/components/coffees.dart';
 import 'package:coffee_picker/components/scaffold.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -113,7 +113,7 @@ class _LoginState extends ConsumerState<Login> {
     Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (context) => CoffeeInput()),
+          builder: (context) => const Coffees()),
     );
   }
 
