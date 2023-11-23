@@ -1,6 +1,5 @@
 import 'package:coffee_picker/components/coffees.dart';
 import 'package:coffee_picker/components/comparison_chart.dart';
-import 'package:coffee_picker/components/rating_input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

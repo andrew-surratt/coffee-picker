@@ -7,9 +7,9 @@ import 'coffees.dart';
 var ratingsCollection = FirebaseFirestore.instance
     .collection('ratings')
     .withConverter(
-    fromFirestore: (DocumentSnapshot<Map<String, dynamic>> snapshot, _) {
-      return fromJson(snapshot.data());
-      }, toFirestore: (Rating rating, _) {
+        fromFirestore: (DocumentSnapshot<Map<String, dynamic>> snapshot, _) {
+  return fromJson(snapshot.data());
+}, toFirestore: (Rating rating, _) {
   return toJson(rating);
 });
 
@@ -21,10 +21,8 @@ Future<List<Rating>> getUserRatings(User? user) async {
       .where('userRef', isEqualTo: user.uid)
       .get()
       .then((event) {
-        return event.docs
-            .map((e) => e.data())
-            .toList();
-      });
+    return event.docs.map((e) => e.data()).toList();
+  });
 }
 
 Future<List<Rating>> getCoffeeRatings(Coffee coffee) async {
@@ -32,9 +30,7 @@ Future<List<Rating>> getCoffeeRatings(Coffee coffee) async {
       .where('coffeeRef', isEqualTo: coffee.ref)
       .get()
       .then((event) {
-    return event.docs
-        .map((e) => e.data())
-        .toList();
+    return event.docs.map((e) => e.data()).toList();
   });
 }
 

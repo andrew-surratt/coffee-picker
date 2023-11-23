@@ -12,14 +12,17 @@ var coffeesCollection = FirebaseFirestore.instance
 
 Future<List<String>> getCoffeeIndex() async {
   return await FirebaseFirestore.instance
-      .collection('coffees').doc('all')
-      .get().then((value) => value.data()?.keys.toList() ?? []);
+      .collection('coffees')
+      .doc('all')
+      .get()
+      .then((value) => value.data()?.keys.toList() ?? []);
 }
 
 Future<List<Coffee>> getCoffee(String coffeeName) async {
   return await coffeesCollection
       .where('name', isEqualTo: coffeeName)
-      .get().then((event) {
+      .get()
+      .then((event) {
     List<Coffee> coffees = event.docs.map(docToCoffee).toList();
     return coffees;
   });
@@ -28,7 +31,8 @@ Future<List<Coffee>> getCoffee(String coffeeName) async {
 Future<List<Coffee>> getCoffees(List<String> coffeeNames) async {
   return await coffeesCollection
       .where('name', whereIn: coffeeNames)
-      .get().then((event) {
+      .get()
+      .then((event) {
     List<Coffee> coffees = event.docs.map(docToCoffee).toList();
     return coffees;
   });
@@ -64,8 +68,8 @@ CoffeeCreateReq fromJson(Map<String, dynamic>? json) {
     costPerOz: json?['costPerOz'],
     tastingNotes: [...json?['tastingNotes']],
     origins: [...(json?['origins'] ?? [])]
-        .map((e) =>
-            CoffeeOrigin(origin: e['origin'], percentage: e['percentage'].toDouble()))
+        .map((e) => CoffeeOrigin(
+            origin: e['origin'], percentage: e['percentage'].toDouble()))
         .toList(),
   );
 }

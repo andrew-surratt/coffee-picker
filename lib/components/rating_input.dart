@@ -46,7 +46,8 @@ class RatingInput extends ConsumerWidget {
         });
   }
 
-  List<Widget> buildFormFields(BuildContext context, WidgetRef ref, List<Coffee> coffees) {
+  List<Widget> buildFormFields(
+      BuildContext context, WidgetRef ref, List<Coffee> coffees) {
     nameToControllers = coffees
         .map((e) => (
               coffeeName: e.name,

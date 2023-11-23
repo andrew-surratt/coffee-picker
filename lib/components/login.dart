@@ -112,8 +112,7 @@ class _LoginState extends ConsumerState<Login> {
   void navigateToHome() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-          builder: (context) => const Coffees()),
+      MaterialPageRoute(builder: (context) => const Coffees()),
     );
   }
 
