@@ -15,7 +15,11 @@ class ComparisonChart extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeData = Theme.of(context);
-    Future<List<Coffee>> coffees = getCoffees();
+    Future<List<Coffee>> coffees = getCoffees([
+      'Maxwell Medium',
+      'Starbucks (In Store)',
+      'Counter Culture Hologram',
+    ]);
 
     return FutureBuilder(
         future: coffees,
@@ -27,18 +31,16 @@ class ComparisonChart extends ConsumerWidget {
                   context: context,
                   chartComponent: chartComponents,
                   coffeeData: snapshot.data ?? []),
-              floatingActionButton: buildFloatingActionButton(context)
-          );
+              floatingActionButton: buildFloatingActionButton(context));
         });
   }
 
-  Padding buildChartBody({
-    required FlBorderData flBorderData,
-    required ThemeData themeData,
-    required BuildContext context,
-    required List<ChartComponent> chartComponent,
-    required List<Coffee> coffeeData}
-      ) {
+  Padding buildChartBody(
+      {required FlBorderData flBorderData,
+      required ThemeData themeData,
+      required BuildContext context,
+      required List<ChartComponent> chartComponent,
+      required List<Coffee> coffeeData}) {
     LineTouchData lineTouchData = buildLineTouchData(themeData, coffeeData);
     LineChart lineChart = buildLineChart(
         lineTouchData: lineTouchData,
@@ -48,18 +50,17 @@ class ComparisonChart extends ConsumerWidget {
         chartComponent: chartComponents,
         coffeeData: coffeeData);
     return Padding(
-          padding: const EdgeInsets.fromLTRB(20, 40, 40, 20),
-          child: lineChart);
+        padding: const EdgeInsets.fromLTRB(20, 40, 40, 20), child: lineChart);
   }
 
   FloatingActionButton buildFloatingActionButton(BuildContext context) {
     return FloatingActionButton.small(
-          onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => RatingInput(),
-              )),
-          child: const Icon(Icons.navigate_next));
+        onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => RatingInput(),
+            )),
+        child: const Icon(Icons.navigate_next));
   }
 }
 

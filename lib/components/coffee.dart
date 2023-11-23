@@ -26,7 +26,7 @@ class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
   @override
   Widget build(BuildContext context) {
     User? user = getUser();
-    Future<List<Rating>> ratings = getUserRatings(widget.coffee, user);
+    Future<List<Rating>> ratings = getCoffeeRatings(widget.coffee);
     return FutureBuilder(
         future: ratings,
         builder: (BuildContext context, AsyncSnapshot<List<Rating>> snapshot) {
@@ -134,11 +134,13 @@ class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
           setState(() {
             addRating(
               Rating(
+                userRef: user.uid,
+                userName: user.displayName ?? 'Anonymous',
+                coffeeRef: coffeeData.ref,
+                coffeeName: coffeeData.name,
                 rating: double.parse(ratingController.text),
                 review: reviewController.text ?? '',
               ),
-              coffeeData,
-              user,
             );
             ratingController.clear();
             reviewController.clear();

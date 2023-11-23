@@ -10,23 +10,46 @@ var coffeesCollection = FirebaseFirestore.instance
   return toJson(coffee);
 });
 
-Future<List<Coffee>> getCoffees() async {
-  return await coffeesCollection.get().then((event) {
-    List<Coffee> coffees = event.docs.map((doc) {
-      var data = doc.data();
-      if (kDebugMode) {
-        print("${doc.id} => $data");
-      }
-      return Coffee(
-        ref: doc.reference.id,
-        name: data.name,
-        costPerOz: data.costPerOz,
-        tastingNotes: data.tastingNotes,
-        origins: data.origins,
-      );
-    }).toList();
+Future<List<String>> getCoffeeIndex() async {
+  return await FirebaseFirestore.instance
+      .collection('coffees')
+      .doc('all')
+      .get()
+      .then((value) => value.data()?.keys.toList() ?? []);
+}
+
+Future<List<Coffee>> getCoffee(String coffeeName) async {
+  return await coffeesCollection
+      .where('name', isEqualTo: coffeeName)
+      .get()
+      .then((event) {
+    List<Coffee> coffees = event.docs.map(docToCoffee).toList();
     return coffees;
   });
+}
+
+Future<List<Coffee>> getCoffees(List<String> coffeeNames) async {
+  return await coffeesCollection
+      .where('name', whereIn: coffeeNames)
+      .get()
+      .then((event) {
+    List<Coffee> coffees = event.docs.map(docToCoffee).toList();
+    return coffees;
+  });
+}
+
+Coffee docToCoffee(doc) {
+  var data = doc.data();
+  if (kDebugMode) {
+    print("${doc.id} => $data");
+  }
+  return Coffee(
+    ref: doc.reference.id,
+    name: data.name,
+    costPerOz: data.costPerOz,
+    tastingNotes: data.tastingNotes,
+    origins: data.origins,
+  );
 }
 
 Future<DocumentSnapshot<CoffeeCreateReq>> addCoffee(
@@ -45,8 +68,8 @@ CoffeeCreateReq fromJson(Map<String, dynamic>? json) {
     costPerOz: json?['costPerOz'],
     tastingNotes: [...json?['tastingNotes']],
     origins: [...(json?['origins'] ?? [])]
-        .map((e) =>
-            CoffeeOrigin(origin: e['origin'], percentage: e['percentage']))
+        .map((e) => CoffeeOrigin(
+            origin: e['origin'], percentage: e['percentage'].toDouble()))
         .toList(),
   );
 }
