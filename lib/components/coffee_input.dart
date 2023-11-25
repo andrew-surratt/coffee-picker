@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coffee_picker/components/scaffold.dart';
+import 'package:coffee_picker/providers/coffeesIndex.dart';
 import 'package:coffee_picker/repositories/taste_notes.dart';
 
 import 'package:flutter/material.dart';
@@ -146,12 +148,17 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
                   ))
               .toList();
 
+          var coffeeName = name.value.text;
           addCoffee(CoffeeCreateReq(
-            name: name.value.text,
+            name: coffeeName,
             costPerOz: costPerOz,
             tastingNotes: tasteNotes.getTags ?? [],
             origins: origins,
           ));
+
+          upsertCoffeeIndex(coffeeName);
+
+          ref.invalidate(coffeeIndexProvider);
 
           tasteNotes.getTags?.forEach((element) {
             addTastingNote(element);
