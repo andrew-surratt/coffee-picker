@@ -18,6 +18,13 @@ Future<List<String>> getCoffeeIndex() async {
       .then((value) => value.data()?.keys.toList() ?? []);
 }
 
+void upsertCoffeeIndex(String coffeeName) async {
+  return await FirebaseFirestore.instance
+      .collection('coffees')
+      .doc('all')
+      .update({coffeeName: true});
+}
+
 Future<List<Coffee>> getCoffee(String coffeeName) async {
   return await coffeesCollection
       .where('name', isEqualTo: coffeeName)
