@@ -80,7 +80,9 @@ class _CoffeesState extends ConsumerState<Coffees> {
           controller.openView();
         },
         onSubmitted: (String value) {
-          coffees = getCoffee(value);
+          setState(() {
+            coffees = getCoffee(value);
+          });
         },
         leading: const Icon(Icons.search),
       );
