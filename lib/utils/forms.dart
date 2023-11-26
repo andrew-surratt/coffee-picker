@@ -77,61 +77,90 @@ TextFormField buildTextFormField({
 
 Padding buildMultiTagField({
   required TextfieldTagsController controller,
+  required String label,
   required String hintText,
+  required ThemeData theme,
   Color? tagColor,
 }) {
   return Padding(
-      padding: EdgeInsets.symmetric(vertical: 0),
+      padding: const EdgeInsets.symmetric(vertical: 0),
       child: TextFieldTags(
         textfieldTagsController: controller,
+        letterCase: LetterCase.small,
         inputfieldBuilder: (BuildContext context,
             TextEditingController tec,
             FocusNode fn,
             String? error,
             void Function(String value)? onChanged,
             void Function(String value)? onSubmitted) {
-          return createTagsBuilder(tec, fn, controller, hintText, onChanged,
-              onSubmitted, error, tagColor);
+          return createTagsBuilder(tec: tec,
+              fn: fn,
+              controller: controller,
+              hintText: hintText,
+              label: label,
+              theme: theme,
+              onChanged: onChanged,
+              onSubmitted: onSubmitted,
+              error: error,
+              tagColor: tagColor);
         },
       ));
 }
 
-TagsBuilder createTagsBuilder(
-    TextEditingController tec,
-    FocusNode fn,
-    TextfieldTagsController controller,
-    String hintText,
-    void Function(String value)? onChanged,
-    void Function(String value)? onSubmitted,
-    String? error,
-    Color? tagColor) {
+TagsBuilder createTagsBuilder({
+  required TextEditingController tec,
+  required FocusNode fn,
+  required TextfieldTagsController controller,
+  required String hintText,
+  required String label,
+  required ThemeData theme,
+  void Function(String value)? onChanged,
+  void Function(String value)? onSubmitted,
+  String? error,
+  Color? tagColor,
+}) {
   return (BuildContext context, ScrollController sc, List<String> tags,
       void Function(String tag) onDeleteTag) {
     return TextFormField(
       controller: tec,
       focusNode: fn,
       onChanged: onChanged,
-      onFieldSubmitted: onSubmitted,
+      onFieldSubmitted: (String value) {
+        if (onSubmitted != null) {
+          fn.requestFocus();
+          return onSubmitted(value);
+        }
+      },
+      style: theme.textTheme.labelMedium,
       decoration: InputDecoration(
+        border: const OutlineInputBorder(),
+        labelText: label,
         hintText: controller.hasTags ? '' : hintText,
+        floatingLabelBehavior: controller.hasTags
+            ? FloatingLabelBehavior.always
+            : FloatingLabelBehavior.auto,
         errorText: error,
         prefixIcon: tags.isNotEmpty
             ? SingleChildScrollView(
-                controller: sc,
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                    children: tags.map((String tag) {
-                  return buildTagField(tagColor, tag, onDeleteTag);
-                }).toList()),
-              )
+          controller: sc,
+          scrollDirection: Axis.horizontal,
+          child: Row(
+              children: tags.map((String tag) {
+                return buildTagField(tagColor: tagColor, tag: tag, onDeleteTag: onDeleteTag, theme: theme);
+              }).toList()),
+        )
             : null,
       ),
     );
   };
 }
 
-Container buildTagField(
-    Color? tagColor, String tag, void Function(String tag) onDeleteTag) {
+Container buildTagField({
+    required String tag,
+    required void Function(String tag) onDeleteTag,
+    required ThemeData theme,
+    Color? tagColor,
+}) {
   return Container(
     decoration: BoxDecoration(
       borderRadius: const BorderRadius.all(
@@ -145,7 +174,7 @@ Container buildTagField(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         InkWell(
-          child: Text(tag),
+          child: Text(tag, style: theme.textTheme.labelMedium?.copyWith(color: theme.cardColor)),
         ),
         const SizedBox(width: 4.0),
         InkWell(

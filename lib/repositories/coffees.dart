@@ -85,7 +85,7 @@ Map<String, dynamic> toJson(CoffeeCreateReq coffee) {
   return {
     'name': coffee.name,
     'costPerOz': coffee.costPerOz,
-    'tastingNotes': coffee.tastingNotes,
+    'tastingNotes': coffee.tastingNotes.map((e) => e.toLowerCase()).toList(),
     'origins': coffee.origins
         .map((e) => {
               'origin': e.origin,
