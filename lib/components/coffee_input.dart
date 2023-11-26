@@ -46,42 +46,52 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
         child: ListView.builder(
           itemCount: formFieldsCount,
           itemBuilder: (context, index) {
-            if (index == formFieldsCount - 1) {
-              return buildSubmitButton(context);
-            } else if (index == formFieldsCount - 2) {
-              return buildAddOriginButton(context);
-            } else if (index == 0) {
-              return buildFormFieldText(
-                  controller: name,
-                  label: 'Coffee Name',
-                  hint: 'Tasty Coffee',
-                  validationText: () => 'Enter a coffee');
-            } else if (index == 1) {
-              return buildMultiTagField(
-                  controller: tasteNotes,
-                  hintText: 'Tasting notes',
-                  tagColor: theme.primaryColor);
-            } else if (index == 2) {
-              return buildFormFieldDouble(
-                  controller: cost,
-                  label: 'Cost of beans/grounds (\$)',
-                  hint: '20',
-                  validationText: () => 'Enter an amount');
-            } else if (index == 3) {
-              return buildFormFieldDouble(
-                  controller: weight,
-                  label: 'Weight of beans/grounds (oz)',
-                  hint: '10',
-                  validationText: () => 'Enter an amount');
-            } else {
-              return buildOriginField(index);
-            }
+            return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+                child: getFormField(index, formFieldsCount, context, theme));
           },
         ));
     return ScaffoldBuilder(
         body: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 100),
             child: inputForm));
+  }
+
+  Widget getFormField(
+      int index, int formFieldsCount, BuildContext context, ThemeData theme) {
+    if (index == formFieldsCount - 1) {
+      return buildSubmitButton(context);
+    } else if (index == formFieldsCount - 2) {
+      return buildAddOriginButton(context);
+    } else if (index == 0) {
+      return buildFormFieldText(
+          controller: name,
+          label: 'Coffee Name',
+          hint: 'Tasty Coffee',
+          validationText: () => 'Enter a coffee');
+    } else if (index == 1) {
+      return buildMultiTagField(
+          controller: tasteNotes,
+          label: 'Tasting notes',
+          hintText: 'chocolate',
+          tagColor: theme.primaryColor,
+          theme: theme,
+      );
+    } else if (index == 2) {
+      return buildFormFieldDouble(
+          controller: cost,
+          label: 'Cost of beans/grounds (\$)',
+          hint: '20',
+          validationText: () => 'Enter an amount');
+    } else if (index == 3) {
+      return buildFormFieldDouble(
+          controller: weight,
+          label: 'Weight of beans/grounds (oz)',
+          hint: '10',
+          validationText: () => 'Enter an amount');
+    } else {
+      return buildOriginField(index);
+    }
   }
 
   Row buildOriginField(int index) {
@@ -135,43 +145,47 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
   Padding buildSubmitButton(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0),
-      child: ElevatedButton(
+      child: FilledButton(
         onPressed: () {
-          var costValue = double.parse(cost.value.text);
-          var weightValue = double.parse(weight.value.text);
-          var costPerOz =
-              toPrecision(calculateCostPerOz(costValue, weightValue));
-          var origins = widget.originFields
-              .map((e) => CoffeeOrigin(
-                    origin: e.origin.text,
-                    percentage: double.parse(e.originPercentage.text),
-                  ))
-              .toList();
-
-          var coffeeName = name.value.text;
-          addCoffee(CoffeeCreateReq(
-            name: coffeeName,
-            costPerOz: costPerOz,
-            tastingNotes: tasteNotes.getTags ?? [],
-            origins: origins,
-          ));
-
-          upsertCoffeeIndex(coffeeName);
-
-          ref.invalidate(coffeeIndexProvider);
-
-          tasteNotes.getTags?.forEach((element) {
-            addTastingNote(element);
-          });
-
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const Coffees(),
-              ));
+          submitCoffee(context);
         },
         child: const Text('Submit'),
       ),
     );
+  }
+
+  void submitCoffee(BuildContext context) {
+    var costValue = double.parse(cost.value.text);
+    var weightValue = double.parse(weight.value.text);
+    var costPerOz =
+        toPrecision(calculateCostPerOz(costValue, weightValue));
+    var origins = widget.originFields
+        .map((e) => CoffeeOrigin(
+              origin: e.origin.text,
+              percentage: double.parse(e.originPercentage.text),
+            ))
+        .toList();
+
+    var coffeeName = name.value.text;
+    addCoffee(CoffeeCreateReq(
+      name: coffeeName,
+      costPerOz: costPerOz,
+      tastingNotes: tasteNotes.getTags ?? [],
+      origins: origins,
+    ));
+
+    upsertCoffeeIndex(coffeeName);
+
+    ref.invalidate(coffeeIndexProvider);
+
+    tasteNotes.getTags?.forEach((element) {
+      addTastingNote(element);
+    });
+
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const Coffees(),
+        ));
   }
 }

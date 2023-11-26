@@ -15,5 +15,5 @@ Future<List<String>> getTasteNotes() async {
 }
 
 void addTastingNote(String note) async {
-  return await tasteNotesDoc.update({note: true});
+  return await tasteNotesDoc.update({note.toLowerCase(): true});
 }
