@@ -1,5 +1,6 @@
 import 'package:coffee_picker/components/coffees.dart';
 import 'package:coffee_picker/components/comparison_chart.dart';
+import 'package:coffee_picker/components/user_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -27,7 +28,7 @@ class ScaffoldBuilder extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: themeData.colorScheme.inversePrimary,
+        backgroundColor: themeData.colorScheme.primary,
         title: Text(config.value?.title ?? defaultConfig.title),
       ),
       body: Padding(
@@ -40,12 +41,27 @@ class ScaffoldBuilder extends ConsumerWidget {
   }
 
   Drawer buildDrawer(BuildContext context) {
+    var theme = Theme.of(context);
     return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
+          SizedBox(
+            height: 80,
+            child: DrawerHeader(
+              decoration: BoxDecoration(color: theme.primaryColor),
+              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+              child: const Row(
+                  children: [
+                    Icon(Icons.coffee),
+                    Spacer(),
+                  ]
+              ),
+            ),
+          ),
           ListTile(
             title: const Text('Home'),
+            leading: const Icon(Icons.home),
             onTap: () {
               Navigator.pop(context);
               Navigator.pushReplacement(context,
@@ -54,25 +70,40 @@ class ScaffoldBuilder extends ConsumerWidget {
           ),
           ListTile(
             title: const Text('Demo'),
+            leading: const Icon(Icons.construction),
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (context) => CoffeeInput()));
+              Navigator.pushReplacement(
+                  context, MaterialPageRoute(builder: (context) => CoffeeInput()));
             },
           ),
           ListTile(
             title: const Text('Compare'),
+            leading: const Icon(Icons.bar_chart),
             onTap: () {
               Navigator.pop(context);
               Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
                       builder: (context) => ComparisonChart(chartComponents: [
-                            ChartComponent(ComponentName.price),
-                            ChartComponent(ComponentName.rating),
-                          ])));
+                        ChartComponent(ComponentName.price),
+                        ChartComponent(ComponentName.rating),
+                      ])));
             },
           ),
+          const Spacer(),
+          ListTile(
+            title: const Text('Profile'),
+            leading: const Icon(Icons.person),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const UserProfile(),
+                  ));
+            },
+          )
         ],
       ),
     );
