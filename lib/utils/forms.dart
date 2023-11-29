@@ -27,7 +27,9 @@ TextFormField buildFormFieldText({
   String Function()? validationText,
   String? emptyValidationText,
   TextInputType? textInputType,
+  TextStyle? style,
   bool obscureText = false,
+  bool readOnly = false,
   bool Function(String value)? isInvalid,
 }) {
   return buildTextFormField(
@@ -39,6 +41,8 @@ TextFormField buildFormFieldText({
     textInputType: textInputType,
     obscureText: obscureText,
     isInvalid: isInvalid,
+    readOnly: readOnly,
+    style: style,
   );
 }
 
@@ -49,13 +53,17 @@ TextFormField buildTextFormField({
   String Function()? validationText,
   String? emptyValidationText,
   TextInputType? textInputType,
+  TextStyle? style,
   bool obscureText = false,
+  bool readOnly = false,
   bool Function(String value)? isInvalid,
 }) {
   return TextFormField(
     controller: controller,
     keyboardType: textInputType,
     obscureText: obscureText,
+    readOnly: readOnly,
+    style: style,
     decoration: InputDecoration(
       border: const OutlineInputBorder(),
       labelText: label,

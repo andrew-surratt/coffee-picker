@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
@@ -16,6 +18,15 @@ void useAuthState({void Function(User user)? onAuthChanged}) {
 
 User? getUser() {
   return FirebaseAuth.instance.currentUser;
+}
+
+Future<void> updateDisplayName(String displayName) async {
+  var currentUser = getUser();
+  if (currentUser == null) {
+    return Future.error('No user currently logged in.');
+  }
+  await currentUser.updateDisplayName(displayName);
+  return currentUser.reload();
 }
 
 Future<UserCredential> signup(String emailAddress, String password) async {
