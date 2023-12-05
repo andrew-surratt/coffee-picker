@@ -83,6 +83,17 @@ TextFormField buildTextFormField({
   );
 }
 
+Widget buildCheckboxField({
+  required bool isChecked,
+  required void Function(bool?) onChanged,
+  required String label,
+}) {
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.start,
+    children: [Checkbox(value: isChecked, onChanged: onChanged), Text(label)],
+  );
+}
+
 Padding buildMultiTagField({
   required TextfieldTagsController controller,
   required String label,
@@ -101,7 +112,8 @@ Padding buildMultiTagField({
             String? error,
             void Function(String value)? onChanged,
             void Function(String value)? onSubmitted) {
-          return createTagsBuilder(tec: tec,
+          return createTagsBuilder(
+              tec: tec,
               fn: fn,
               controller: controller,
               hintText: hintText,
@@ -150,13 +162,17 @@ TagsBuilder createTagsBuilder({
         errorText: error,
         prefixIcon: tags.isNotEmpty
             ? SingleChildScrollView(
-          controller: sc,
-          scrollDirection: Axis.horizontal,
-          child: Row(
-              children: tags.map((String tag) {
-                return buildTagField(tagColor: tagColor, tag: tag, onDeleteTag: onDeleteTag, theme: theme);
-              }).toList()),
-        )
+                controller: sc,
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                    children: tags.map((String tag) {
+                  return buildTagField(
+                      tagColor: tagColor,
+                      tag: tag,
+                      onDeleteTag: onDeleteTag,
+                      theme: theme);
+                }).toList()),
+              )
             : null,
       ),
     );
@@ -164,10 +180,10 @@ TagsBuilder createTagsBuilder({
 }
 
 Container buildTagField({
-    required String tag,
-    required void Function(String tag) onDeleteTag,
-    required ThemeData theme,
-    Color? tagColor,
+  required String tag,
+  required void Function(String tag) onDeleteTag,
+  required ThemeData theme,
+  Color? tagColor,
 }) {
   return Container(
     decoration: BoxDecoration(
@@ -182,7 +198,9 @@ Container buildTagField({
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         InkWell(
-          child: Text(tag, style: theme.textTheme.labelMedium?.copyWith(color: theme.cardColor)),
+          child: Text(tag,
+              style: theme.textTheme.labelMedium
+                  ?.copyWith(color: theme.cardColor)),
         ),
         const SizedBox(width: 4.0),
         InkWell(

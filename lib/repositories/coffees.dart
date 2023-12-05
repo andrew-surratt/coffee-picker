@@ -55,6 +55,8 @@ Coffee docToCoffee(doc) {
     name: data.name,
     costPerOz: data.costPerOz,
     tastingNotes: data.tastingNotes,
+    usdaOrganic: data.usdaOrganic,
+    fairTrade: data.fairTrade,
     origins: data.origins,
   );
 }
@@ -74,6 +76,8 @@ CoffeeCreateReq fromJson(Map<String, dynamic>? json) {
     name: json?['name'],
     costPerOz: json?['costPerOz'],
     tastingNotes: [...json?['tastingNotes']],
+    usdaOrganic: json?['usdaOrganic'] ?? false,
+    fairTrade: json?['fairTrade'] ?? false,
     origins: [...(json?['origins'] ?? [])]
         .map((e) => CoffeeOrigin(
             origin: e['origin'], percentage: e['percentage'].toDouble()))
@@ -86,6 +90,8 @@ Map<String, dynamic> toJson(CoffeeCreateReq coffee) {
     'name': coffee.name,
     'costPerOz': coffee.costPerOz,
     'tastingNotes': coffee.tastingNotes.map((e) => e.toLowerCase()).toList(),
+    'usdaOrganic': coffee.usdaOrganic,
+    'fairTrade': coffee.fairTrade,
     'origins': coffee.origins
         .map((e) => {
               'origin': e.origin,
@@ -111,12 +117,16 @@ class CoffeeCreateReq {
     required this.costPerOz,
     required this.tastingNotes,
     required this.origins,
+    required this.usdaOrganic,
+    required this.fairTrade,
   });
 
   final String name;
   final double costPerOz;
   final List<String> tastingNotes;
   final List<CoffeeOrigin> origins;
+  final bool usdaOrganic;
+  final bool fairTrade;
 }
 
 class Coffee extends CoffeeCreateReq {
@@ -125,12 +135,17 @@ class Coffee extends CoffeeCreateReq {
     required costPerOz,
     required tastingNotes,
     required origins,
+    required usdaOrganic,
+    required fairTrade,
     required this.ref,
   }) : super(
-            name: name,
-            costPerOz: costPerOz,
-            tastingNotes: tastingNotes,
-            origins: origins);
+          name: name,
+          costPerOz: costPerOz,
+          tastingNotes: tastingNotes,
+          origins: origins,
+          usdaOrganic: usdaOrganic,
+          fairTrade: fairTrade,
+        );
 
   final String ref;
 }
