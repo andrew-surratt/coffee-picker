@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coffee_picker/components/scaffold.dart';
 import 'package:coffee_picker/providers/coffeesIndex.dart';
 import 'package:coffee_picker/repositories/taste_notes.dart';
@@ -31,8 +30,10 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
   final tasteNotes = TextfieldTagsController();
   final cost = TextEditingController();
   final weight = TextEditingController();
-  final startingFormFieldsCount = 4;
+  final startingFormFieldsCount = 5;
   final endingFormFieldsCount = 2;
+  bool isOrganic = false;
+  bool isFairTrade = false;
 
   @override
   Widget build(BuildContext context) {
@@ -71,11 +72,11 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
           validationText: () => 'Enter a coffee');
     } else if (index == 1) {
       return buildMultiTagField(
-          controller: tasteNotes,
-          label: 'Tasting notes',
-          hintText: 'chocolate',
-          tagColor: theme.primaryColor,
-          theme: theme,
+        controller: tasteNotes,
+        label: 'Tasting notes',
+        hintText: 'chocolate',
+        tagColor: theme.primaryColor,
+        theme: theme,
       );
     } else if (index == 2) {
       return buildFormFieldDouble(
@@ -89,6 +90,31 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
           label: 'Weight of beans/grounds (oz)',
           hint: '10',
           validationText: () => 'Enter an amount');
+    } else if (index == 4) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          buildCheckboxField(
+              isChecked: isOrganic,
+              label: 'USDA Organic',
+              onChanged: (isChecked) {
+                setState(() {
+                  isOrganic = isChecked ?? false;
+                });
+              }),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: buildCheckboxField(
+                isChecked: isFairTrade,
+                label: 'Fair Trade',
+                onChanged: (isChecked) {
+                  setState(() {
+                    isFairTrade = isChecked ?? false;
+                  });
+                }),
+          ),
+        ],
+      );
     } else {
       return buildOriginField(index);
     }
@@ -157,8 +183,7 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
   void submitCoffee(BuildContext context) {
     var costValue = double.parse(cost.value.text);
     var weightValue = double.parse(weight.value.text);
-    var costPerOz =
-        toPrecision(calculateCostPerOz(costValue, weightValue));
+    var costPerOz = toPrecision(calculateCostPerOz(costValue, weightValue));
     var origins = widget.originFields
         .map((e) => CoffeeOrigin(
               origin: e.origin.text,
@@ -171,6 +196,8 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
       name: coffeeName,
       costPerOz: costPerOz,
       tastingNotes: tasteNotes.getTags ?? [],
+      usdaOrganic: isOrganic,
+      fairTrade: isFairTrade,
       origins: origins,
     ));
 
