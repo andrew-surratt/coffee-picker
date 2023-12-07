@@ -1,4 +1,5 @@
 import 'package:coffee_picker/components/scaffold.dart';
+import 'package:coffee_picker/providers/icons.dart';
 import 'package:coffee_picker/services/auth.dart';
 import 'package:coffee_picker/utils/forms.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -49,6 +50,8 @@ class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
   }
 
   List<Widget> buildInfo() {
+    var icons = ref.watch(iconsProvider);
+
     List<Widget> tastingNotesRow = [];
     for (var note in widget.coffee.tastingNotes) {
       if (tastingNotesRow.isNotEmpty) {
@@ -60,13 +63,53 @@ class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
       ));
     }
 
+    List<Widget> originsRow = [];
+    for (var origin in widget.coffee.origins) {
+      if (originsRow.isNotEmpty) {
+        originsRow.add(const Text(' | '));
+      }
+      originsRow.add(Text(
+        "${origin.percentage.floor()}% ${origin.origin}",
+        style: const TextStyle(fontStyle: FontStyle.italic),
+      ));
+    }
+
     var h1Style = const TextStyle(fontSize: 25, fontWeight: FontWeight.bold);
+
+    var fairTradeIcon = icons.value?.fairTrade;
+    var organicIcon = icons.value?.organic;
+    List<Widget> iconsRow = [];
+    const iconPadding = EdgeInsets.symmetric(horizontal: 5, vertical: 5);
+    if (fairTradeIcon != null && widget.coffee.fairTrade) {
+      iconsRow.add(Padding(padding: iconPadding, child: Image.memory(
+        fairTradeIcon,
+        scale: 8,
+        semanticLabel: 'Fair Trade Certified',
+      )));
+    }
+    if (organicIcon != null && widget.coffee.usdaOrganic) {
+      iconsRow.add(Padding(padding: iconPadding, child: Image.memory(
+        organicIcon,
+        scale: 8,
+        semanticLabel: 'USDA Organic Certified',
+      )));
+    }
+
     return [
       Text(widget.coffee.name, style: h1Style),
       Text("\$${widget.coffee.costPerOz.toString()} / oz"),
       Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: tastingNotesRow),
+          children: tastingNotesRow
+      ),
+      Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: originsRow
+      ),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: iconsRow,
+      ),
     ];
   }
 
@@ -90,7 +133,7 @@ class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
     return [
       Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Flexible(
                 flex: 1,
@@ -98,7 +141,7 @@ class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
                   padding: edgeInsets,
                   child: buildFormFieldDouble(
                       controller: ratingController,
-                      label: "Rating of ${widget.coffee.name} 1-10",
+                      label: "Rating",
                       hint: '5',
                       validationText: () => 'Enter a rating 1-10',
                       isInvalid: (value) => value < 1 || value > 10),
@@ -109,7 +152,7 @@ class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
                   padding: edgeInsets,
                   child: buildFormFieldText(
                     controller: reviewController,
-                    label: "Review of ${widget.coffee.name}",
+                    label: "Review",
                     hint: 'Good',
                   )),
             ),
@@ -129,7 +172,7 @@ class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
   ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0),
-      child: ElevatedButton(
+      child: FilledButton(
         onPressed: () {
           setState(() {
             addRating(
@@ -154,19 +197,29 @@ class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
 
   List<Card> buildReview(List<Rating> reviews) {
     return reviews
-        .map((r) => Card(
-                child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: Row(
+        .map((r) {
+          var reviewBody = Column(
                 mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("${r.rating}/10 | ",
+                  Text(r.userName,
                       style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text("${r.rating}/10",
+                      style: const TextStyle(
+                        height: 2,
                           fontSize: 15, fontWeight: FontWeight.bold)),
                   r.review.isNotEmpty ? Text(r.review) : const Text('...'),
                 ],
-              ),
-            )))
+              );
+          return Card(
+                child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Row(children: [
+                reviewBody
+              ],)
+            ));
+        })
         .toList();
   }
 }
