@@ -1,10 +1,13 @@
 import 'package:coffee_picker/components/coffee.dart';
 import 'package:coffee_picker/components/coffee_input.dart';
 import 'package:coffee_picker/components/scaffold.dart';
+import 'package:coffee_picker/components/thumbnail.dart';
 import 'package:coffee_picker/providers/coffeesIndex.dart';
 import 'package:coffee_picker/repositories/coffees.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'origin.dart';
 
 class Coffees extends ConsumerStatefulWidget {
   const Coffees({super.key});
@@ -99,14 +102,22 @@ class _CoffeesState extends ConsumerState<Coffees> {
     });
   }
 
-  Card buildCard(
+  Widget buildCard(
     BuildContext context,
     Coffee coffee,
   ) {
     var theme = Theme.of(context);
-    return Card(
-      color: theme.cardColor,
-      child: InkWell(
+    var info = Flex(
+          direction: Axis.vertical,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(coffee.name ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(coffee.tastingNotes.join(', '), style: const TextStyle(fontStyle: FontStyle.italic)),
+            OriginText(origins: coffee.origins),
+          ],
+        );
+    return InkWell(
         onTap: () {
           Navigator.pushReplacement(
             context,
@@ -114,16 +125,13 @@ class _CoffeesState extends ConsumerState<Coffees> {
           );
         },
         splashColor: theme.primaryColor,
-        child: Flex(
-          direction: Axis.vertical,
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            Text(coffee.name ?? ''),
-            Text(
-                "Cost Per Oz: ${coffee.costPerOz.toString() ?? ''}, Notes: ${coffee.tastingNotes.join(',')}"),
+            Thumbnail(thumbnailPath: coffee.thumbnailPath),
+            info,
           ],
         ),
-      ),
-    );
+      );
   }
 }

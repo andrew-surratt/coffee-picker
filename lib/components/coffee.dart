@@ -1,4 +1,6 @@
+import 'package:coffee_picker/components/origin.dart';
 import 'package:coffee_picker/components/scaffold.dart';
+import 'package:coffee_picker/components/thumbnail.dart';
 import 'package:coffee_picker/providers/icons.dart';
 import 'package:coffee_picker/services/auth.dart';
 import 'package:coffee_picker/utils/forms.dart';
@@ -37,11 +39,31 @@ class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
               buildFormFields(context, ref, widget.coffee, user);
 
           var inputForm = Padding(
-              padding: const EdgeInsets.all(40),
+              padding: const EdgeInsets.all(0),
               child:
                   Column(mainAxisAlignment: MainAxisAlignment.start, children: [
-                ...buildInfo(),
-                const Divider(height: 50, thickness: 3),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Flexible(
+                          flex: 1,
+                            child: Thumbnail(thumbnailPath: widget.coffee.thumbnailPath),
+                        ),
+                        Flexible(
+                          flex: 1,
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 5),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: buildInfo(),
+                              ),
+                            ),
+                        ),
+                      ],
+                    ),
+                const Divider(height: 50, thickness: 1),
                 buildForm(formFields),
                 ...buildReview(reviews),
               ]));
@@ -59,18 +81,7 @@ class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
       }
       tastingNotesRow.add(Text(
         note,
-        style: const TextStyle(fontStyle: FontStyle.italic),
-      ));
-    }
-
-    List<Widget> originsRow = [];
-    for (var origin in widget.coffee.origins) {
-      if (originsRow.isNotEmpty) {
-        originsRow.add(const Text(' | '));
-      }
-      originsRow.add(Text(
-        "${origin.percentage.floor()}% ${origin.origin}",
-        style: const TextStyle(fontStyle: FontStyle.italic),
+        style: const TextStyle(fontStyle: FontStyle.italic, fontWeight: FontWeight.bold),
       ));
     }
 
@@ -97,17 +108,13 @@ class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
 
     return [
       Text(widget.coffee.name, style: h1Style),
-      Text("\$${widget.coffee.costPerOz.toString()} / oz"),
-      Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+      Text("(\$${widget.coffee.costPerOz.toString()} / oz)"),
+      Wrap(
           children: tastingNotesRow
       ),
+      OriginText(origins: widget.coffee.origins),
       Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: originsRow
-      ),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: iconsRow,
       ),
     ];
