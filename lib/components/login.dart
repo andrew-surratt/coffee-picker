@@ -29,50 +29,48 @@ class _LoginState extends ConsumerState<Login> {
   final passwordField = TextEditingController();
   final signupButtonName = 'Signup';
   final loginButtonName = 'Login';
-  LoginAction currentLoginAction = LoginAction.signup;
-
-  @override
-  void initState() {
-    super.initState();
-    initCurrentLoginAction();
-  }
+  LoginAction currentLoginAction = LoginAction.login;
 
   @override
   Widget build(BuildContext context) {
     var inputForm = Padding(
-        padding: const EdgeInsets.all(100),
+        padding: const EdgeInsets.all(10),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              buildFormFieldText(
-                  controller: usernameField,
-                  label: 'Email',
-                  hint: 'name@provider.com',
-                  validationText: () => widget.usernameError,
-                  emptyValidationText: 'Email is required.',
-                  textInputType: TextInputType.emailAddress,
-                  isInvalid: (_) => widget.usernameError.isNotEmpty),
-              buildFormFieldText(
-                  controller: passwordField,
-                  label: 'Password',
-                  hint: '***',
-                  validationText: () => widget.passwordError,
-                  emptyValidationText: 'Password is required.',
-                  textInputType: TextInputType.visiblePassword,
-                  obscureText: true,
-                  isInvalid: (_) => widget.passwordError.isNotEmpty),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  padding: const EdgeInsets.all(10),
+                  child: buildFormFieldText(
+                      controller: usernameField,
+                      label: 'Email',
+                      hint: 'name@provider.com',
+                      validationText: () => widget.usernameError,
+                      emptyValidationText: 'Email is required.',
+                      textInputType: TextInputType.emailAddress,
+                      isInvalid: (_) => widget.usernameError.isNotEmpty)),
+              Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: buildFormFieldText(
+                      controller: passwordField,
+                      label: 'Password',
+                      hint: '***',
+                      validationText: () => widget.passwordError,
+                      emptyValidationText: 'Password is required.',
+                      textInputType: TextInputType.visiblePassword,
+                      obscureText: true,
+                      isInvalid: (_) => widget.passwordError.isNotEmpty)),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10.0),
                 child: ElevatedButton(
                   onPressed: handleLoginAction,
                   child: Text(mapLoginActionToName(currentLoginAction)),
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 5.0),
+                padding: const EdgeInsets.symmetric(vertical: 2.0),
                 child: TextButton(
                   onPressed: handleSwitchLoginAction,
                   child: Text(
@@ -170,10 +168,6 @@ class _LoginState extends ConsumerState<Login> {
 
   void runFormValidation() {
     _formKey.currentState?.validate();
-  }
-
-  initCurrentLoginAction() {
-    currentLoginAction = LoginAction.signup;
   }
 
   switchCurrentLoginAction() {

@@ -4,9 +4,9 @@ import 'package:flutter/foundation.dart';
 var coffeesCollection = FirebaseFirestore.instance
     .collection('coffees')
     .withConverter(
-        fromFirestore: (DocumentSnapshot<Map<String, dynamic>> snapshot, _) {
-  return fromJson(snapshot.data());
-}, toFirestore: (CoffeeCreateReq coffee, _) {
+    fromFirestore: (DocumentSnapshot<Map<String, dynamic>> snapshot, _) {
+      return fromJson(snapshot.data());
+    }, toFirestore: (CoffeeCreateReq coffee, _) {
   return toJson(coffee);
 });
 
@@ -15,7 +15,11 @@ Future<List<String>> getCoffeeIndex() async {
       .collection('coffees')
       .doc('all')
       .get()
-      .then((value) => value.data()?.keys.toList() ?? []);
+      .then((value) =>
+  value
+      .data()
+      ?.keys
+      .toList() ?? []);
 }
 
 void upsertCoffeeIndex(String coffeeName) async {
@@ -58,16 +62,18 @@ Coffee docToCoffee(doc) {
     usdaOrganic: data.usdaOrganic,
     fairTrade: data.fairTrade,
     origins: data.origins,
+    thumbnailPath: data.thumbnailPath,
   );
 }
 
-Future<DocumentSnapshot<CoffeeCreateReq>> addCoffee(
-    CoffeeCreateReq coffee) async {
+Future<Coffee> addCoffee(CoffeeCreateReq coffee) async {
   return await coffeesCollection.add(coffee).then((event) {
     if (kDebugMode) {
       print("${event.id} => ${event.path}");
     }
     return event.get();
+  }).then((event) {
+    return docToCoffee(event);
   });
 }
 
@@ -78,8 +84,10 @@ CoffeeCreateReq fromJson(Map<String, dynamic>? json) {
     tastingNotes: [...json?['tastingNotes']],
     usdaOrganic: json?['usdaOrganic'] ?? false,
     fairTrade: json?['fairTrade'] ?? false,
+    thumbnailPath: json?['thumbnailPath'] ?? '',
     origins: [...(json?['origins'] ?? [])]
-        .map((e) => CoffeeOrigin(
+        .map((e) =>
+        CoffeeOrigin(
             origin: e['origin'], percentage: e['percentage'].toDouble()))
         .toList(),
   );
@@ -92,11 +100,13 @@ Map<String, dynamic> toJson(CoffeeCreateReq coffee) {
     'tastingNotes': coffee.tastingNotes.map((e) => e.toLowerCase()).toList(),
     'usdaOrganic': coffee.usdaOrganic,
     'fairTrade': coffee.fairTrade,
+    'thumbnailPath': coffee.thumbnailPath,
     'origins': coffee.origins
-        .map((e) => {
-              'origin': e.origin,
-              'percentage': e.percentage,
-            })
+        .map((e) =>
+    {
+      'origin': e.origin,
+      'percentage': e.percentage,
+    })
         .toList(),
   };
 }
@@ -119,6 +129,7 @@ class CoffeeCreateReq {
     required this.origins,
     required this.usdaOrganic,
     required this.fairTrade,
+    required this.thumbnailPath,
   });
 
   final String name;
@@ -127,6 +138,7 @@ class CoffeeCreateReq {
   final List<CoffeeOrigin> origins;
   final bool usdaOrganic;
   final bool fairTrade;
+  final String thumbnailPath;
 }
 
 class Coffee extends CoffeeCreateReq {
@@ -137,15 +149,17 @@ class Coffee extends CoffeeCreateReq {
     required origins,
     required usdaOrganic,
     required fairTrade,
+    required thumbnailPath,
     required this.ref,
   }) : super(
-          name: name,
-          costPerOz: costPerOz,
-          tastingNotes: tastingNotes,
-          origins: origins,
-          usdaOrganic: usdaOrganic,
-          fairTrade: fairTrade,
-        );
+    name: name,
+    costPerOz: costPerOz,
+    tastingNotes: tastingNotes,
+    origins: origins,
+    usdaOrganic: usdaOrganic,
+    fairTrade: fairTrade,
+    thumbnailPath: thumbnailPath,
+  );
 
   final String ref;
 }
