@@ -7,7 +7,7 @@ import 'package:coffee_picker/repositories/coffees.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'origin.dart';
+import 'origin_text.dart';
 
 class Coffees extends ConsumerStatefulWidget {
   const Coffees({super.key});

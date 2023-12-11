@@ -192,8 +192,6 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
       return null;
     }
 
-    // Directory tempDir = await getTemporaryDirectory();
-    // var pathCropped = "${tempDir.path}/cropped-${image.name}";
     CroppedFile? croppedFile = await ImageCropper().cropImage(
       sourcePath: image.path,
       aspectRatioPresets: [

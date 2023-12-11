@@ -1,4 +1,4 @@
-import 'package:coffee_picker/components/origin.dart';
+import 'package:coffee_picker/components/origin_text.dart';
 import 'package:coffee_picker/components/scaffold.dart';
 import 'package:coffee_picker/components/thumbnail.dart';
 import 'package:coffee_picker/providers/icons.dart';
@@ -38,10 +38,7 @@ class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
           List<Widget> formFields =
               buildFormFields(context, ref, widget.coffee, user);
 
-          var inputForm = Padding(
-              padding: const EdgeInsets.all(0),
-              child:
-                  Column(mainAxisAlignment: MainAxisAlignment.start, children: [
+          var inputForm = Column(mainAxisAlignment: MainAxisAlignment.start, children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,7 +63,7 @@ class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
                 const Divider(height: 50, thickness: 1),
                 buildForm(formFields),
                 ...buildReview(reviews),
-              ]));
+              ]);
           return ScaffoldBuilder(body: inputForm);
         });
   }
