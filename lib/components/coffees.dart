@@ -90,7 +90,11 @@ class _CoffeesState extends ConsumerState<Coffees> {
         leading: const Icon(Icons.search),
       );
     }, suggestionsBuilder: (BuildContext context, SearchController controller) {
-      return coffeeIndex.value?.map((e) => ListTile(
+      return coffeeIndex.value?.where((e) {
+            return e
+                .toLowerCase()
+                .contains(controller.value.text.toLowerCase() ?? '');
+          }).map((e) => ListTile(
                 title: Text(e),
                 onTap: () {
                   setState(() {
@@ -108,30 +112,32 @@ class _CoffeesState extends ConsumerState<Coffees> {
   ) {
     var theme = Theme.of(context);
     var info = Flex(
-          direction: Axis.vertical,
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(coffee.name ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            Text(coffee.tastingNotes.join(', '), style: const TextStyle(fontStyle: FontStyle.italic)),
-            OriginText(origins: coffee.origins),
-          ],
-        );
+      direction: Axis.vertical,
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(coffee.name ?? '',
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        Text(coffee.tastingNotes.join(', '),
+            style: const TextStyle(fontStyle: FontStyle.italic)),
+        OriginText(origins: coffee.origins),
+      ],
+    );
     return InkWell(
-        onTap: () {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => CoffeeInfo(coffee: coffee)),
-          );
-        },
-        splashColor: theme.primaryColor,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Thumbnail(thumbnailPath: coffee.thumbnailPath),
-            info,
-          ],
-        ),
-      );
+      onTap: () {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => CoffeeInfo(coffee: coffee)),
+        );
+      },
+      splashColor: theme.primaryColor,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Thumbnail(thumbnailPath: coffee.thumbnailPath),
+          info,
+        ],
+      ),
+    );
   }
 }
