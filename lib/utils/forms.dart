@@ -20,6 +20,90 @@ TextFormField buildFormFieldDouble({
       });
 }
 
+Widget buildFormFieldTextAutocomplete({
+  required TextEditingController controller,
+  required FocusNode focusNode,
+  required String label,
+  required String hint,
+  String Function()? validationText,
+  String? emptyValidationText,
+  TextInputType? textInputType,
+  TextStyle? style,
+  bool obscureText = false,
+  bool readOnly = false,
+  bool Function(String value)? isInvalid,
+  List<String> autocompleteOptions = const [],
+}) {
+  return RawAutocomplete<String>(
+    optionsViewBuilder: (context, onSelected, options) {
+      return Container(
+        margin: const EdgeInsets.symmetric(vertical: 1.0),
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: Material(
+            elevation: 2.0,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 200),
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: options.length,
+                itemBuilder: (BuildContext context, int index) {
+                  final dynamic option = options.elementAt(index);
+                  return TextButton(
+                    onPressed: () {
+                      onSelected(option);
+                    },
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 1.0),
+                        child: Text(
+                          '$option',
+                          textAlign: TextAlign.left,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+    optionsBuilder: (TextEditingValue textEditingValue) {
+      if (textEditingValue.text == '') {
+        return const Iterable<String>.empty();
+      }
+      return autocompleteOptions.where((String option) {
+        return option
+            .toLowerCase()
+            .contains(textEditingValue.text.toLowerCase());
+      });
+    },
+    onSelected: (String selectedTag) {
+      controller.text = selectedTag;
+    },
+    textEditingController: controller,
+    focusNode: focusNode,
+    fieldViewBuilder: (context, ttec, tfn, onFieldSubmitted) {
+      return buildTextFormField(
+        controller: ttec,
+        focusNode: tfn,
+        hint: hint,
+        label: label,
+        validationText: validationText,
+        emptyValidationText: emptyValidationText,
+        textInputType: textInputType,
+        obscureText: obscureText,
+        isInvalid: isInvalid,
+        readOnly: readOnly,
+        style: style,
+      );
+    },
+  );
+}
+
 TextFormField buildFormFieldText({
   required TextEditingController controller,
   required String label,
@@ -50,6 +134,7 @@ TextFormField buildTextFormField({
   required TextEditingController controller,
   required String label,
   required String hint,
+  FocusNode? focusNode,
   String Function()? validationText,
   String? emptyValidationText,
   TextInputType? textInputType,
@@ -60,6 +145,7 @@ TextFormField buildTextFormField({
 }) {
   return TextFormField(
     controller: controller,
+    focusNode: focusNode,
     keyboardType: textInputType,
     obscureText: obscureText,
     readOnly: readOnly,
@@ -94,17 +180,67 @@ Widget buildCheckboxField({
   );
 }
 
-Padding buildMultiTagField({
+Widget buildMultiTagField({
   required TextfieldTagsController controller,
   required String label,
   required String hintText,
   required ThemeData theme,
+  List<String> autocompleteOptions = const [],
   Color? tagColor,
 }) {
-  return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 0),
-      child: TextFieldTags(
+  return Autocomplete<String>(
+    optionsViewBuilder: (context, onSelected, options) {
+      return Container(
+        margin: const EdgeInsets.symmetric(vertical: 4.0),
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: Material(
+            elevation: 2.0,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 200),
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: options.length,
+                itemBuilder: (BuildContext context, int index) {
+                  final dynamic option = options.elementAt(index);
+                  return TextButton(
+                    onPressed: () {
+                      onSelected(option);
+                    },
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 15.0),
+                        child: Text(
+                          '$option',
+                          textAlign: TextAlign.left,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+    optionsBuilder: (TextEditingValue textEditingValue) {
+      if (textEditingValue.text == '') {
+        return const Iterable<String>.empty();
+      }
+      return autocompleteOptions.where((String option) {
+        return option.contains(textEditingValue.text.toLowerCase());
+      });
+    },
+    onSelected: (String selectedTag) {
+      controller.addTag = selectedTag;
+    },
+    fieldViewBuilder: (context, ttec, tfn, onFieldSubmitted) {
+      return TextFieldTags(
         textfieldTagsController: controller,
+        textEditingController: ttec,
+        focusNode: tfn,
         letterCase: LetterCase.small,
         inputfieldBuilder: (BuildContext context,
             TextEditingController tec,
@@ -124,7 +260,9 @@ Padding buildMultiTagField({
               error: error,
               tagColor: tagColor);
         },
-      ));
+      );
+    },
+  );
 }
 
 TagsBuilder createTagsBuilder({

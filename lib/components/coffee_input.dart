@@ -3,7 +3,10 @@ import 'dart:typed_data';
 
 import 'package:coffee_picker/components/scaffold.dart';
 import 'package:coffee_picker/providers/coffeesIndex.dart';
+import 'package:coffee_picker/providers/originsIndex.dart';
+import 'package:coffee_picker/providers/tasteNotes.dart';
 import 'package:coffee_picker/repositories/coffee_images.dart';
+import 'package:coffee_picker/repositories/origins.dart';
 import 'package:coffee_picker/repositories/taste_notes.dart';
 
 import 'package:flutter/material.dart';
@@ -24,6 +27,7 @@ class CoffeeInput extends ConsumerStatefulWidget {
     (
       origin: TextEditingController(),
       originPercentage: TextEditingController(),
+      focusNode: FocusNode(),
     )
   ];
 
@@ -36,7 +40,7 @@ class CoffeeInput extends ConsumerStatefulWidget {
 class _CoffeeInput extends ConsumerState<CoffeeInput> {
   final _formKey = GlobalKey<FormState>();
   final name = TextEditingController();
-  final tasteNotes = TextfieldTagsController();
+  final tasteNotesController = TextfieldTagsController();
   final cost = TextEditingController();
   final weight = TextEditingController();
   final startingFormFieldsCount = 6;
@@ -82,6 +86,8 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
     required ThemeData theme,
     List<PlatformUiSettings> uiSettings = const [],
   }) {
+    AsyncValue<List<String>> tasteNotes = ref.watch(tasteNotesProvider);
+
     if (index == formFieldsCount - 1) {
       return buildSubmitButton(context);
     } else if (index == formFieldsCount - 2) {
@@ -116,12 +122,12 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
       );
     } else if (index == 2) {
       return buildMultiTagField(
-        controller: tasteNotes,
-        label: 'Tasting notes',
-        hintText: 'chocolate',
-        tagColor: theme.primaryColor,
-        theme: theme,
-      );
+          controller: tasteNotesController,
+          label: 'Tasting notes',
+          hintText: 'chocolate',
+          tagColor: theme.primaryColor,
+          theme: theme,
+          autocompleteOptions: tasteNotes.value ?? []);
     } else if (index == 3) {
       return buildFormFieldDouble(
           controller: cost,
@@ -170,8 +176,14 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
       onPressed: () {
         onUploadImage();
       },
-      icon: const Icon(Icons.add, size: 15,),
-      label: const Text('Upload Image', style: TextStyle(fontSize: 12),),
+      icon: const Icon(
+        Icons.add,
+        size: 15,
+      ),
+      label: const Text(
+        'Upload Image',
+        style: TextStyle(fontSize: 12),
+      ),
       style: FilledButton.styleFrom(
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5.0), side: const BorderSide()),
@@ -224,15 +236,21 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
   }
 
   Row buildOriginField(int index) {
+    AsyncValue<List<String>> originsWatch = ref.watch(originIndexProvider);
+
     return Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
       Expanded(
         flex: 5,
-        child: buildFormFieldText(
-            controller:
-                widget.originFields[index - startingFormFieldsCount].origin,
-            label: 'Origin',
-            hint: 'Brazil',
-            validationText: () => 'Enter an origin country'),
+        child: buildFormFieldTextAutocomplete(
+          controller:
+              widget.originFields[index - startingFormFieldsCount].origin,
+          focusNode:
+              widget.originFields[index - startingFormFieldsCount].focusNode,
+          label: 'Origin',
+          hint: 'Brazil',
+          validationText: () => 'Enter an origin country',
+          autocompleteOptions: originsWatch.value ?? [],
+        ),
       ),
       const Spacer(flex: 1),
       Flexible(
@@ -263,6 +281,7 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
             widget.originFields.add((
               origin: TextEditingController(),
               originPercentage: TextEditingController(),
+              focusNode: FocusNode(),
             ));
           });
         },
@@ -276,14 +295,22 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
       padding: const EdgeInsets.symmetric(vertical: 16.0),
       child: FilledButton(
         onPressed: () {
-          submitCoffee(context);
+          submitCoffee(context).then((e) {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const Coffees(),
+                ));
+          });
         },
         child: const Text('Submit'),
       ),
     );
   }
 
-  void submitCoffee(BuildContext context) {
+  Future<void> submitCoffee(BuildContext context) async {
+    _formKey.currentState?.validate();
+
     var costValue = double.parse(cost.value.text);
     var weightValue = double.parse(weight.value.text);
     var costPerOz = toPrecision(calculateCostPerOz(costValue, weightValue));
@@ -299,17 +326,14 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
       var croppedPath = _croppedFile!.path;
       String fileExt = croppedPath.split('.').last;
       uploadedPath = "${uuidV4()}/thumbnail.$fileExt";
-      uploadImage(
-          File(croppedPath),
-          uploadedPath
-      );
+      uploadImage(File(croppedPath), uploadedPath);
     }
 
     var coffeeName = name.value.text;
     addCoffee(CoffeeCreateReq(
       name: coffeeName,
       costPerOz: costPerOz,
-      tastingNotes: tasteNotes.getTags ?? [],
+      tastingNotes: tasteNotesController.getTags ?? [],
       usdaOrganic: isOrganic,
       fairTrade: isFairTrade,
       thumbnailPath: uploadedPath,
@@ -320,14 +344,19 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
 
     ref.invalidate(coffeeIndexProvider);
 
-    tasteNotes.getTags?.forEach((element) {
+    var originsWatch = ref.watch(originIndexProvider);
+
+    for (final String o in origins.map((e) => e.origin).toList()) {
+      await upsertOriginIndex(o,
+          createDoc: originsWatch.value == null || originsWatch.value!.isEmpty);
+    }
+
+    ref.invalidate(originIndexProvider);
+
+    tasteNotesController.getTags?.forEach((element) {
       addTastingNote(element);
     });
 
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const Coffees(),
-        ));
+    ref.invalidate(tasteNotesProvider);
   }
 }

@@ -6,7 +6,7 @@ var tasteNotesDoc =
 
 Future<List<String>> getTasteNotes() async {
   DocumentSnapshot<Map<String, dynamic>> tasteNotesSnap =
-      await tasteNotesDoc.get(const GetOptions(source: Source.cache));
+      await tasteNotesDoc.get();
   List<String> tasteNotes = tasteNotesSnap.data()?.keys.toList() ?? [];
   if (kDebugMode) {
     print("$tasteNotes");
