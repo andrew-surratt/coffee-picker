@@ -6,6 +6,7 @@ import 'package:coffee_picker/services/auth.dart';
 import 'package:coffee_picker/utils/forms.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../repositories/coffees.dart';
@@ -22,48 +23,48 @@ class CoffeeInfo extends ConsumerStatefulWidget {
 
 class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
   final _formKey = GlobalKey<FormState>();
+  final double defaultRating = 3.0;
 
-  TextEditingController ratingController = TextEditingController();
+  late double ratingController;
   TextEditingController reviewController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
+    ratingController = defaultRating;
     User? user = getUser();
     Future<List<Rating>> ratings = getCoffeeRatings(widget.coffee);
+
     return FutureBuilder(
         future: ratings,
         builder: (BuildContext context, AsyncSnapshot<List<Rating>> snapshot) {
           List<Rating> reviews = snapshot.data ?? [];
 
-          List<Widget> formFields =
-              buildFormFields(context, ref, widget.coffee, user);
-
-          var inputForm = Column(mainAxisAlignment: MainAxisAlignment.start, children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          var inputForm = ListView(children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Flexible(
+                  flex: 1,
+                  child: Thumbnail(thumbnailPath: widget.coffee.thumbnailPath),
+                ),
+                Flexible(
+                  flex: 1,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 5),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Flexible(
-                          flex: 1,
-                            child: Thumbnail(thumbnailPath: widget.coffee.thumbnailPath),
-                        ),
-                        Flexible(
-                          flex: 1,
-                            child: Padding(
-                              padding: const EdgeInsets.only(left: 5),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: buildInfo(),
-                              ),
-                            ),
-                        ),
-                      ],
+                      children: buildInfo(),
                     ),
-                const Divider(height: 50, thickness: 1),
-                buildForm(formFields),
-                ...buildReview(reviews),
-              ]);
+                  ),
+                ),
+              ],
+            ),
+            const Divider(height: 50, thickness: 1),
+            buildForm(buildFormFields(context, ref, widget.coffee, user)),
+            ...buildReview(reviews),
+          ]);
           return ScaffoldBuilder(body: inputForm);
         });
   }
@@ -78,7 +79,8 @@ class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
       }
       tastingNotesRow.add(Text(
         note,
-        style: const TextStyle(fontStyle: FontStyle.italic, fontWeight: FontWeight.bold),
+        style: const TextStyle(
+            fontStyle: FontStyle.italic, fontWeight: FontWeight.bold),
       ));
     }
 
@@ -89,26 +91,28 @@ class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
     List<Widget> iconsRow = [];
     const iconPadding = EdgeInsets.symmetric(horizontal: 5, vertical: 5);
     if (fairTradeIcon != null && widget.coffee.fairTrade) {
-      iconsRow.add(Padding(padding: iconPadding, child: Image.memory(
-        fairTradeIcon,
-        scale: 8,
-        semanticLabel: 'Fair Trade Certified',
-      )));
+      iconsRow.add(Padding(
+          padding: iconPadding,
+          child: Image.memory(
+            fairTradeIcon,
+            scale: 8,
+            semanticLabel: 'Fair Trade Certified',
+          )));
     }
     if (organicIcon != null && widget.coffee.usdaOrganic) {
-      iconsRow.add(Padding(padding: iconPadding, child: Image.memory(
-        organicIcon,
-        scale: 8,
-        semanticLabel: 'USDA Organic Certified',
-      )));
+      iconsRow.add(Padding(
+          padding: iconPadding,
+          child: Image.memory(
+            organicIcon,
+            scale: 8,
+            semanticLabel: 'USDA Organic Certified',
+          )));
     }
 
     return [
       Text(widget.coffee.name, style: h1Style),
       Text("(\$${widget.coffee.costPerOz.toString()} / oz)"),
-      Wrap(
-          children: tastingNotesRow
-      ),
+      Wrap(children: tastingNotesRow),
       OriginText(origins: widget.coffee.origins),
       Row(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -117,113 +121,121 @@ class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
     ];
   }
 
-  Form buildForm(List<Widget> formFields) {
+  Form buildForm(Widget? formFields) {
     return Form(
       key: _formKey,
       child: Card(
-          child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: formFields,
-      )),
+        child: formFields,
+      ),
     );
   }
 
-  List<Widget> buildFormFields(
+  Widget? buildFormFields(
       BuildContext context, WidgetRef ref, Coffee coffees, User? user) {
     if (user == null) {
-      return [];
+      return null;
     }
-    const edgeInsets = EdgeInsets.symmetric(vertical: 10, horizontal: 15);
-    return [
-      Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Flexible(
-                flex: 1,
-                child: Padding(
-                  padding: edgeInsets,
-                  child: buildFormFieldDouble(
-                      controller: ratingController,
-                      label: "Rating",
-                      hint: '5',
-                      validationText: () => 'Enter a rating 1-10',
-                      isInvalid: (value) => value < 1 || value > 10),
-                )),
-            Flexible(
-              flex: 3,
-              child: Padding(
-                  padding: edgeInsets,
-                  child: buildFormFieldText(
-                    controller: reviewController,
-                    label: "Review",
-                    hint: 'Good',
-                  )),
+
+    const edgeInsets = EdgeInsets.symmetric(vertical: 5, horizontal: 15);
+    return Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Padding(
+            padding: edgeInsets,
+            child: RatingBar.builder(
+              initialRating: defaultRating,
+              minRating: 1,
+              direction: Axis.horizontal,
+              itemSize: 30,
+              allowHalfRating: true,
+              itemCount: 5,
+              itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+              itemBuilder: (context, _) => const Icon(
+                Icons.star,
+                color: Colors.amber,
+              ),
+              onRatingUpdate: (rating) {
+                ratingController = rating;
+              },
             ),
-            Padding(
+          ),
+          Padding(
               padding: edgeInsets,
-              child: buildSubmitButton(context, ref, widget.coffee, user),
-            ),
-          ]),
-    ];
+              child: buildFormFieldText(
+                controller: reviewController,
+                label: "Review",
+                hint: 'Good',
+              )),
+          Padding(
+            padding: edgeInsets,
+            child: buildSubmitButton(context, ref, widget.coffee, user),
+          ),
+        ]);
   }
 
-  Padding buildSubmitButton(
+  Widget buildSubmitButton(
     BuildContext context,
     WidgetRef ref,
     Coffee coffeeData,
     User user,
   ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0),
-      child: FilledButton(
-        onPressed: () {
+    return FilledButton(
+      onPressed: () {
+        addRating(
+          Rating(
+            userRef: user.uid,
+            userName: user.displayName ?? 'Anonymous',
+            coffeeRef: coffeeData.ref,
+            coffeeName: coffeeData.name,
+            rating: ratingController,
+            review: reviewController.text ?? '',
+          ),
+        ).then((value) {
           setState(() {
-            addRating(
-              Rating(
-                userRef: user.uid,
-                userName: user.displayName ?? 'Anonymous',
-                coffeeRef: coffeeData.ref,
-                coffeeName: coffeeData.name,
-                rating: double.parse(ratingController.text),
-                review: reviewController.text ?? '',
-              ),
-            );
-            ratingController.clear();
             reviewController.clear();
             _formKey.currentState?.reset();
           });
-        },
-        child: const Text('Submit'),
-      ),
+        });
+      },
+      child: const Text('Submit'),
     );
   }
 
   List<Card> buildReview(List<Rating> reviews) {
-    return reviews
-        .map((r) {
-          var reviewBody = Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(r.userName,
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold)),
-                  Text("${r.rating}/10",
-                      style: const TextStyle(
-                        height: 2,
-                          fontSize: 15, fontWeight: FontWeight.bold)),
-                  r.review.isNotEmpty ? Text(r.review) : const Text('...'),
-                ],
-              );
-          return Card(
-                child: Padding(
+    return reviews.map((r) {
+      var reviewBody = Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2),
+            child: Text(r.userName,
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          ),
+          RatingBarIndicator(
+            rating: r.rating,
+            direction: Axis.horizontal,
+            itemSize: 20,
+            itemCount: 5,
+            itemBuilder: (context, _) => const Icon(
+              Icons.star,
+              color: Colors.amber,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2),
+            child: r.review.isNotEmpty ? Text(r.review) : const Text('...'),
+          ),
+        ],
+      );
+      return Card(
+          child: Padding(
               padding: const EdgeInsets.all(10),
-              child: Row(children: [
-                reviewBody
-              ],)
-            ));
-        })
-        .toList();
+              child: Row(
+                children: [reviewBody],
+              )));
+    }).toList();
   }
 }
