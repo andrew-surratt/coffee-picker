@@ -23,15 +23,7 @@ import '../utils/uuid.dart';
 import 'coffees.dart';
 
 class CoffeeInput extends ConsumerStatefulWidget {
-  var originFields = [
-    (
-      origin: TextEditingController(),
-      originPercentage: TextEditingController(),
-      focusNode: FocusNode(),
-    )
-  ];
-
-  CoffeeInput({super.key});
+  const CoffeeInput({super.key});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _CoffeeInput();
@@ -43,8 +35,14 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
   final tasteNotesController = TextfieldTagsController();
   final cost = TextEditingController();
   final weight = TextEditingController();
-  final startingFormFieldsCount = 6;
-  final endingFormFieldsCount = 2;
+
+  var originFields = [
+    (
+    origin: TextEditingController(),
+    originPercentage: TextEditingController(),
+    focusNode: FocusNode(),
+    )
+  ];
   bool isOrganic = false;
   bool isFairTrade = false;
   Uint8List? _image;
@@ -53,25 +51,67 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
   @override
   Widget build(BuildContext context) {
     var theme = Theme.of(context);
-    var formFieldsCount = startingFormFieldsCount +
-        widget.originFields.length +
-        endingFormFieldsCount;
+    AsyncValue<List<String>> tasteNotes = ref.watch(tasteNotesProvider);
+    var uiSettings = buildCropperUISettings(context);
 
+    const itemPadding = EdgeInsets.symmetric(vertical: 5, horizontal: 5);
     var inputForm = Form(
         key: _formKey,
-        child: ListView.builder(
-          itemCount: formFieldsCount,
-          itemBuilder: (context, index) {
-            return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
-                child: getFormField(
-                  index: index,
-                  formFieldsCount: formFieldsCount,
-                  context: context,
+        child: ListView(
+          padding: itemPadding,
+          children: [
+            Padding(
+              padding: itemPadding,
+              child: buildFormFieldText(
+                  controller: name,
+                  label: 'Coffee Name',
+                  hint: 'Tasty Coffee',
+                  validationText: () => 'Enter a coffee'),
+            ),
+            Padding(
+              padding: itemPadding,
+              child: buildImageUploadBox(uiSettings),
+            ),
+            Padding(
+              padding: itemPadding,
+              child: buildMultiTagField(
+                  controller: tasteNotesController,
+                  label: 'Tasting notes',
+                  hintText: 'chocolate',
+                  tagColor: theme.primaryColor,
                   theme: theme,
-                  uiSettings: buildCropperUISettings(context),
-                ));
-          },
+                  autocompleteOptions: tasteNotes.value ?? []),
+            ),
+            Padding(
+              padding: itemPadding,
+              child: buildFormFieldDouble(
+                  controller: cost,
+                  label: 'Cost of beans/grounds (\$)',
+                  hint: '20',
+                  validationText: () => 'Enter an amount'),
+            ),
+            Padding(
+              padding: itemPadding,
+              child: buildFormFieldDouble(
+                  controller: weight,
+                  label: 'Weight of beans/grounds (oz)',
+                  hint: '10',
+                  validationText: () => 'Enter an amount'),
+            ),
+            Padding(
+              padding: itemPadding,
+              child: buildCertificationsCheckboxes(),
+            ),
+            ...buildOriginFields(),
+            Padding(
+              padding: itemPadding,
+              child: buildAddOriginButton(context),
+            ),
+            Padding(
+              padding: itemPadding,
+              child: buildSubmitButton(context),
+            ),
+          ],
         ));
     return ScaffoldBuilder(
         body: Padding(
@@ -79,95 +119,55 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
             child: inputForm));
   }
 
-  Widget getFormField({
-    required int index,
-    required int formFieldsCount,
-    required BuildContext context,
-    required ThemeData theme,
-    List<PlatformUiSettings> uiSettings = const [],
-  }) {
-    AsyncValue<List<String>> tasteNotes = ref.watch(tasteNotesProvider);
-
-    if (index == formFieldsCount - 1) {
-      return buildSubmitButton(context);
-    } else if (index == formFieldsCount - 2) {
-      return buildAddOriginButton(context);
-    } else if (index == 0) {
-      return buildFormFieldText(
-          controller: name,
-          label: 'Coffee Name',
-          hint: 'Tasty Coffee',
-          validationText: () => 'Enter a coffee');
-    } else if (index == 1) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Flexible(
-            flex: 1,
-            child: SizedBox(
-              width: 110,
-              height: 110,
-              child: _image == null
-                  ? buildImageUploadButton(uiSettings: uiSettings)
-                  : Image.memory(
-                      _image!,
-                      fit: BoxFit.scaleDown,
-                      repeat: ImageRepeat.noRepeat,
-                      width: 256,
-                    ),
-            ),
-          ),
-          const Spacer(flex: 2)
-        ],
-      );
-    } else if (index == 2) {
-      return buildMultiTagField(
-          controller: tasteNotesController,
-          label: 'Tasting notes',
-          hintText: 'chocolate',
-          tagColor: theme.primaryColor,
-          theme: theme,
-          autocompleteOptions: tasteNotes.value ?? []);
-    } else if (index == 3) {
-      return buildFormFieldDouble(
-          controller: cost,
-          label: 'Cost of beans/grounds (\$)',
-          hint: '20',
-          validationText: () => 'Enter an amount');
-    } else if (index == 4) {
-      return buildFormFieldDouble(
-          controller: weight,
-          label: 'Weight of beans/grounds (oz)',
-          hint: '10',
-          validationText: () => 'Enter an amount');
-    } else if (index == 5) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          buildCheckboxField(
-              isChecked: isOrganic,
-              label: 'USDA Organic',
+  Row buildCertificationsCheckboxes() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        buildCheckboxField(
+            isChecked: isOrganic,
+            label: 'USDA Organic',
+            onChanged: (isChecked) {
+              setState(() {
+                isOrganic = isChecked ?? false;
+              });
+            }),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: buildCheckboxField(
+              isChecked: isFairTrade,
+              label: 'Fair Trade',
               onChanged: (isChecked) {
                 setState(() {
-                  isOrganic = isChecked ?? false;
+                  isFairTrade = isChecked ?? false;
                 });
               }),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: buildCheckboxField(
-                isChecked: isFairTrade,
-                label: 'Fair Trade',
-                onChanged: (isChecked) {
-                  setState(() {
-                    isFairTrade = isChecked ?? false;
-                  });
-                }),
+        ),
+      ],
+    );
+  }
+
+  Row buildImageUploadBox(List<PlatformUiSettings> uiSettings) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Flexible(
+          flex: 1,
+          child: SizedBox(
+            width: 110,
+            height: 110,
+            child: _image == null
+                ? buildImageUploadButton(uiSettings: uiSettings)
+                : Image.memory(
+                    _image!,
+                    fit: BoxFit.scaleDown,
+                    repeat: ImageRepeat.noRepeat,
+                    width: 256,
+                  ),
           ),
-        ],
-      );
-    } else {
-      return buildOriginField(index);
-    }
+        ),
+        const Spacer(flex: 2)
+      ],
+    );
   }
 
   FilledButton buildImageUploadButton(
@@ -235,41 +235,45 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
     ];
   }
 
-  Row buildOriginField(int index) {
+  List<Widget> buildOriginFields() {
     AsyncValue<List<String>> originsWatch = ref.watch(originIndexProvider);
 
-    return Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-      Expanded(
-        flex: 5,
-        child: buildFormFieldTextAutocomplete(
-          controller:
-              widget.originFields[index - startingFormFieldsCount].origin,
-          focusNode:
-              widget.originFields[index - startingFormFieldsCount].focusNode,
-          label: 'Origin',
-          hint: 'Brazil',
-          validationText: () => 'Enter an origin country',
-          autocompleteOptions: originsWatch.value ?? [],
-        ),
-      ),
-      const Spacer(flex: 1),
-      Flexible(
-        flex: 2,
-        child: buildFormFieldDouble(
-            controller: widget
-                .originFields[index - startingFormFieldsCount].originPercentage,
-            label: '%',
-            hint: '100',
-            validationText: () => 'Enter a percentage 1-100'),
-      ),
-      TextButton(
-          onPressed: () {
-            setState(() {
-              widget.originFields.removeAt(index - startingFormFieldsCount);
-            });
-          },
-          child: const Icon(Icons.close))
-    ]);
+    return originFields
+        .map((e) => Padding(
+            padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Expanded(
+                    flex: 5,
+                    child: buildFormFieldTextAutocomplete(
+                      controller: e.origin,
+                      focusNode: e.focusNode,
+                      label: 'Origin',
+                      hint: 'Brazil',
+                      validationText: () => 'Enter an origin country',
+                      autocompleteOptions: originsWatch.value ?? [],
+                    ),
+                  ),
+                  const Spacer(flex: 1),
+                  Flexible(
+                    flex: 2,
+                    child: buildFormFieldDouble(
+                        controller: e.originPercentage,
+                        label: '%',
+                        hint: '100',
+                        validationText: () => 'Enter a percentage 1-100'),
+                  ),
+                  TextButton(
+                      onPressed: () {
+                        setState(() {
+                          originFields
+                              .removeAt(originFields.indexOf(e));
+                        });
+                      },
+                      child: const Icon(Icons.close))
+                ])))
+        .toList();
   }
 
   Widget buildAddOriginButton(BuildContext context) {
@@ -278,7 +282,7 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
       child: ElevatedButton(
         onPressed: () {
           setState(() {
-            widget.originFields.add((
+            originFields.add((
               origin: TextEditingController(),
               originPercentage: TextEditingController(),
               focusNode: FocusNode(),
@@ -314,7 +318,7 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
     var costValue = double.parse(cost.value.text);
     var weightValue = double.parse(weight.value.text);
     var costPerOz = toPrecision(calculateCostPerOz(costValue, weightValue));
-    var origins = widget.originFields
+    var origins = originFields
         .map((e) => CoffeeOrigin(
               origin: e.origin.text,
               percentage: double.parse(e.originPercentage.text),
