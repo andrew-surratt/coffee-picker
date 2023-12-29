@@ -3,6 +3,7 @@ import 'package:coffee_picker/components/coffee_input.dart';
 import 'package:coffee_picker/components/scaffold.dart';
 import 'package:coffee_picker/components/thumbnail.dart';
 import 'package:coffee_picker/providers/coffeesIndex.dart';
+import 'package:coffee_picker/providers/roastersIndex.dart';
 import 'package:coffee_picker/repositories/coffees.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,6 +19,8 @@ class Coffees extends ConsumerStatefulWidget {
 
 class _CoffeesState extends ConsumerState<Coffees> {
   Future<List<Coffee>> coffees = Future.value([]);
+  String roasterSearch = '';
+  String nameSearch = '';
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +46,7 @@ class _CoffeesState extends ConsumerState<Coffees> {
             floatingActionButton: FloatingActionButton.small(
                 onPressed: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => CoffeeInput()),
+                      MaterialPageRoute(builder: (context) => const CoffeeInput()),
                     ),
                 child: const Icon(Icons.add)));
       },
@@ -68,7 +71,8 @@ class _CoffeesState extends ConsumerState<Coffees> {
   }
 
   SearchAnchor buildSearchAnchor() {
-    var coffeeIndex = ref.watch(coffeeIndexProvider);
+    var coffeesIndex = ref.watch(coffeesIndexProvider);
+    var roastersIndex = ref.watch(roastersIndexProvider);
 
     return SearchAnchor(
         builder: (BuildContext context, SearchController controller) {
@@ -82,27 +86,50 @@ class _CoffeesState extends ConsumerState<Coffees> {
         onChanged: (_) {
           controller.openView();
         },
-        onSubmitted: (String value) {
+        onSubmitted: (String _) {
           setState(() {
-            coffees = getCoffee(value);
+            if (roasterSearch.isNotEmpty) {
+              coffees = getCoffeesByRoaster(roasterSearch);
+            } else {
+              coffees = getCoffee(nameSearch);
+            }
           });
         },
         leading: const Icon(Icons.search),
       );
     }, suggestionsBuilder: (BuildContext context, SearchController controller) {
-      return coffeeIndex.value?.where((e) {
-            return e
-                .toLowerCase()
-                .contains(controller.value.text.toLowerCase() ?? '');
+      var searchQuery = controller.value.text.toLowerCase();
+      var roasterTiles = roastersIndex.value
+              ?.where((element) =>
+                  searchQuery.isEmpty ||
+                  element.toLowerCase().contains(searchQuery))
+              .map((e) => ListTile(
+                    title: Text(e),
+                    onTap: () {
+                      setState(() {
+                        roasterSearch = e;
+                        nameSearch = '';
+                        controller.closeView(e);
+                      });
+                    },
+                  )) ??
+          [];
+      return roasterTiles.followedBy(coffeesIndex.value?.where((e) {
+            return searchQuery.isEmpty ||
+                e.roaster.toLowerCase().contains(searchQuery) ||
+                e.name.toLowerCase().contains(searchQuery);
           }).map((e) => ListTile(
-                title: Text(e),
+                title: Text(e.name),
+                subtitle: Text(e.roaster),
                 onTap: () {
                   setState(() {
-                    controller.closeView(e);
+                    roasterSearch = '';
+                    nameSearch = e.name;
+                    controller.closeView("${e.roaster} ${e.name}");
                   });
                 },
               )) ??
-          [];
+          []);
     });
   }
 
@@ -116,7 +143,7 @@ class _CoffeesState extends ConsumerState<Coffees> {
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(coffee.name ?? '',
+        Text(coffee.name,
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         Text(coffee.tastingNotes.join(', '),
             style: const TextStyle(fontStyle: FontStyle.italic)),

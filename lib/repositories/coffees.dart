@@ -4,29 +4,40 @@ import 'package:flutter/foundation.dart';
 var coffeesCollection = FirebaseFirestore.instance
     .collection('coffees')
     .withConverter(
-    fromFirestore: (DocumentSnapshot<Map<String, dynamic>> snapshot, _) {
-      return fromJson(snapshot.data());
-    }, toFirestore: (CoffeeCreateReq coffee, _) {
+        fromFirestore: (DocumentSnapshot<Map<String, dynamic>> snapshot, _) {
+  return fromJson(snapshot.data());
+}, toFirestore: (CoffeeCreateReq coffee, _) {
   return toJson(coffee);
 });
 
-Future<List<String>> getCoffeeIndex() async {
-  return await FirebaseFirestore.instance
-      .collection('coffees')
-      .doc('all')
+var coffeeIndexDoc = FirebaseFirestore.instance
+    .collection('coffees')
+    .doc('all');
+
+Future<List<CoffeeIndex>> getCoffeeIndex() async {
+  return await coffeeIndexDoc
       .get()
       .then((value) =>
-  value
-      .data()
-      ?.keys
-      .toList() ?? []);
+          value
+              .data()
+              ?.values
+              .map((e) => CoffeeIndex(roaster: e?['roaster'], name: e?['name']))
+              .toList() ??
+          []);
 }
 
-void upsertCoffeeIndex(String coffeeName) async {
-  return await FirebaseFirestore.instance
-      .collection('coffees')
-      .doc('all')
-      .update({coffeeName: true});
+Future<void> upsertCoffeeIndex(String coffeeName, String roasterName, {bool createDoc = false}) async {
+  if (createDoc) {
+    await coffeeIndexDoc.set({});
+  }
+
+  return await coffeeIndexDoc
+      .update({
+    "$roasterName $coffeeName": {
+      'roaster': roasterName,
+      'name': coffeeName,
+    }
+  });
 }
 
 Future<List<Coffee>> getCoffee(String coffeeName) async {
@@ -49,6 +60,16 @@ Future<List<Coffee>> getCoffees(List<String> coffeeNames) async {
   });
 }
 
+Future<List<Coffee>> getCoffeesByRoaster(String roasterName) async {
+  return await coffeesCollection
+      .where('roaster', isEqualTo: roasterName)
+      .get()
+      .then((event) {
+    List<Coffee> coffees = event.docs.map(docToCoffee).toList();
+    return coffees;
+  });
+}
+
 Coffee docToCoffee(doc) {
   var data = doc.data();
   if (kDebugMode) {
@@ -56,6 +77,7 @@ Coffee docToCoffee(doc) {
   }
   return Coffee(
     ref: doc.reference.id,
+    roaster: data.roaster,
     name: data.name,
     costPerOz: data.costPerOz,
     tastingNotes: data.tastingNotes,
@@ -79,6 +101,7 @@ Future<Coffee> addCoffee(CoffeeCreateReq coffee) async {
 
 CoffeeCreateReq fromJson(Map<String, dynamic>? json) {
   return CoffeeCreateReq(
+    roaster: json?['roaster'] ?? '',
     name: json?['name'],
     costPerOz: json?['costPerOz'],
     tastingNotes: [...json?['tastingNotes']],
@@ -86,8 +109,7 @@ CoffeeCreateReq fromJson(Map<String, dynamic>? json) {
     fairTrade: json?['fairTrade'] ?? false,
     thumbnailPath: json?['thumbnailPath'] ?? '',
     origins: [...(json?['origins'] ?? [])]
-        .map((e) =>
-        CoffeeOrigin(
+        .map((e) => CoffeeOrigin(
             origin: e['origin'], percentage: e['percentage'].toDouble()))
         .toList(),
   );
@@ -95,6 +117,7 @@ CoffeeCreateReq fromJson(Map<String, dynamic>? json) {
 
 Map<String, dynamic> toJson(CoffeeCreateReq coffee) {
   return {
+    'roaster': coffee.roaster,
     'name': coffee.name,
     'costPerOz': coffee.costPerOz,
     'tastingNotes': coffee.tastingNotes.map((e) => e.toLowerCase()).toList(),
@@ -102,13 +125,19 @@ Map<String, dynamic> toJson(CoffeeCreateReq coffee) {
     'fairTrade': coffee.fairTrade,
     'thumbnailPath': coffee.thumbnailPath,
     'origins': coffee.origins
-        .map((e) =>
-    {
-      'origin': e.origin,
-      'percentage': e.percentage,
-    })
+        .map((e) => {
+              'origin': e.origin,
+              'percentage': e.percentage,
+            })
         .toList(),
   };
+}
+
+class CoffeeIndex {
+  final String roaster;
+  final String name;
+
+  CoffeeIndex({required this.roaster, required this.name});
 }
 
 class CoffeeOrigin {
@@ -123,6 +152,7 @@ class CoffeeOrigin {
 
 class CoffeeCreateReq {
   CoffeeCreateReq({
+    required this.roaster,
     required this.name,
     required this.costPerOz,
     required this.tastingNotes,
@@ -132,6 +162,7 @@ class CoffeeCreateReq {
     required this.thumbnailPath,
   });
 
+  final String roaster;
   final String name;
   final double costPerOz;
   final List<String> tastingNotes;
@@ -143,6 +174,7 @@ class CoffeeCreateReq {
 
 class Coffee extends CoffeeCreateReq {
   Coffee({
+    required roaster,
     required name,
     required costPerOz,
     required tastingNotes,
@@ -152,14 +184,15 @@ class Coffee extends CoffeeCreateReq {
     required thumbnailPath,
     required this.ref,
   }) : super(
-    name: name,
-    costPerOz: costPerOz,
-    tastingNotes: tastingNotes,
-    origins: origins,
-    usdaOrganic: usdaOrganic,
-    fairTrade: fairTrade,
-    thumbnailPath: thumbnailPath,
-  );
+          roaster: roaster,
+          name: name,
+          costPerOz: costPerOz,
+          tastingNotes: tastingNotes,
+          origins: origins,
+          usdaOrganic: usdaOrganic,
+          fairTrade: fairTrade,
+          thumbnailPath: thumbnailPath,
+        );
 
   final String ref;
 }

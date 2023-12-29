@@ -110,6 +110,7 @@ class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
     }
 
     return [
+      Text(widget.coffee.roaster),
       Text(widget.coffee.name, style: h1Style),
       Text("(\$${widget.coffee.costPerOz.toString()} / oz)"),
       Wrap(children: tastingNotesRow),

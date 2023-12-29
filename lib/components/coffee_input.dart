@@ -4,9 +4,11 @@ import 'dart:typed_data';
 import 'package:coffee_picker/components/scaffold.dart';
 import 'package:coffee_picker/providers/coffeesIndex.dart';
 import 'package:coffee_picker/providers/originsIndex.dart';
+import 'package:coffee_picker/providers/roastersIndex.dart';
 import 'package:coffee_picker/providers/tasteNotes.dart';
 import 'package:coffee_picker/repositories/coffee_images.dart';
 import 'package:coffee_picker/repositories/origins.dart';
+import 'package:coffee_picker/repositories/roasters.dart';
 import 'package:coffee_picker/repositories/taste_notes.dart';
 
 import 'package:flutter/material.dart';
@@ -31,6 +33,8 @@ class CoffeeInput extends ConsumerStatefulWidget {
 
 class _CoffeeInput extends ConsumerState<CoffeeInput> {
   final _formKey = GlobalKey<FormState>();
+  final roasterName = TextEditingController();
+  final roasterFocusNode = FocusNode();
   final name = TextEditingController();
   final tasteNotesController = TextfieldTagsController();
   final cost = TextEditingController();
@@ -38,9 +42,9 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
 
   var originFields = [
     (
-    origin: TextEditingController(),
-    originPercentage: TextEditingController(),
-    focusNode: FocusNode(),
+      origin: TextEditingController(),
+      originPercentage: TextEditingController(),
+      focusNode: FocusNode(),
     )
   ];
   bool isOrganic = false;
@@ -52,6 +56,7 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
   Widget build(BuildContext context) {
     var theme = Theme.of(context);
     AsyncValue<List<String>> tasteNotes = ref.watch(tasteNotesProvider);
+    AsyncValue<List<String>> roastersIndex = ref.watch(roastersIndexProvider);
     var uiSettings = buildCropperUISettings(context);
 
     const itemPadding = EdgeInsets.symmetric(vertical: 5, horizontal: 5);
@@ -62,10 +67,21 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
           children: [
             Padding(
               padding: itemPadding,
+              child: buildFormFieldTextAutocomplete(
+                controller: roasterName,
+                focusNode: roasterFocusNode,
+                label: 'Roaster Name',
+                hint: 'Stumptown',
+                validationText: () => 'Enter a roaster',
+                autocompleteOptions: roastersIndex.value ?? [],
+              ),
+            ),
+            Padding(
+              padding: itemPadding,
               child: buildFormFieldText(
                   controller: name,
                   label: 'Coffee Name',
-                  hint: 'Tasty Coffee',
+                  hint: 'Holler Mountain',
                   validationText: () => 'Enter a coffee'),
             ),
             Padding(
@@ -267,8 +283,7 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
                   TextButton(
                       onPressed: () {
                         setState(() {
-                          originFields
-                              .removeAt(originFields.indexOf(e));
+                          originFields.removeAt(originFields.indexOf(e));
                         });
                       },
                       child: const Icon(Icons.close))
@@ -334,7 +349,9 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
     }
 
     var coffeeName = name.value.text;
+    var roaster = roasterName.value.text;
     addCoffee(CoffeeCreateReq(
+      roaster: roaster,
       name: coffeeName,
       costPerOz: costPerOz,
       tastingNotes: tasteNotesController.getTags ?? [],
@@ -344,9 +361,19 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
       origins: origins,
     ));
 
-    upsertCoffeeIndex(coffeeName);
+    AsyncValue<List<CoffeeIndex>> coffeeIndex = ref.watch(coffeesIndexProvider);
 
-    ref.invalidate(coffeeIndexProvider);
+    upsertCoffeeIndex(coffeeName, roaster,
+        createDoc: coffeeIndex.value == null || coffeeIndex.value!.isEmpty);
+
+    ref.invalidate(coffeesIndexProvider);
+
+    AsyncValue<List<String>> roastersIndex = ref.watch(roastersIndexProvider);
+
+    upsertRoastersIndex(roaster,
+        createDoc: roastersIndex.value == null || roastersIndex.value!.isEmpty);
+
+    ref.invalidate(roastersIndexProvider);
 
     var originsWatch = ref.watch(originIndexProvider);
 
