@@ -114,7 +114,7 @@ class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
       Text(widget.coffee.name, style: h1Style),
       Text("(\$${widget.coffee.costPerOz.toString()} / oz)"),
       Wrap(children: tastingNotesRow),
-      OriginText(origins: widget.coffee.origins),
+      OriginText(origins: widget.coffee.origins, maxLines: 3,),
       Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: iconsRow,

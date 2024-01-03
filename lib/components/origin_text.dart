@@ -6,30 +6,31 @@ class OriginText extends StatelessWidget {
   final List<CoffeeOrigin> origins;
   final String? separator;
   final TextStyle? originTextStyle;
-  final TextStyle? separatorTextStyle;
+  final int? maxLines;
 
   const OriginText({
     super.key,
     required this.origins,
     this.separator,
     this.originTextStyle,
-    this.separatorTextStyle,
+    this.maxLines,
   });
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> originsRow = [];
+    String originsRow = '';
     for (var origin in origins) {
       if (originsRow.isNotEmpty) {
-        originsRow.add(Text(" ${separator ?? '|'} ", style: separatorTextStyle,));
+        originsRow += " ${separator ?? '|'} ";
       }
-      originsRow.add(Text(
-        "${origin.percentage.floor()}% ${origin.origin}",
-        style: originTextStyle ?? const TextStyle(fontStyle: FontStyle.italic),
-      ));
+      originsRow += "${origin.percentage.floor()}% ${origin.origin}";
     }
-    return Wrap(
-      children: originsRow,
+
+    return Text(
+      originsRow,
+      overflow: TextOverflow.ellipsis,
+      maxLines: maxLines ?? 1,
+      style: originTextStyle ?? const TextStyle(fontStyle: FontStyle.italic),
     );
   }
 }

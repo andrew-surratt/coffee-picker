@@ -40,7 +40,7 @@ class _CoffeesState extends ConsumerState<Coffees> {
                     ),
                   ),
                   Expanded(
-                    child: buildResults(snapshot),
+                    child: buildResults(context, snapshot),
                   ),
                 ]),
             floatingActionButton: FloatingActionButton.small(
@@ -53,20 +53,13 @@ class _CoffeesState extends ConsumerState<Coffees> {
     );
   }
 
-  ListView buildResults(AsyncSnapshot<List<Coffee>> snapshot) {
-    return ListView.builder(
-      itemCount: snapshot.data?.length ?? 0,
+  ListView buildResults(BuildContext context, AsyncSnapshot<List<Coffee>> snapshot) {
+    return ListView(
       padding: const EdgeInsets.all(10),
-      itemBuilder: (context, index) {
-        Coffee? coffee = snapshot.data?[index];
-        if (coffee == null) {
-          return null;
-        }
-        return SizedBox(
-          height: 70,
-          child: buildCard(context, coffee),
-        );
-      },
+      children: snapshot.data?.map((e) => SizedBox(
+        height: 70,
+        child: buildCard(context, e),
+      )).toList() ?? [],
     );
   }
 
@@ -138,14 +131,17 @@ class _CoffeesState extends ConsumerState<Coffees> {
     Coffee coffee,
   ) {
     var theme = Theme.of(context);
-    var info = Flex(
-      direction: Axis.vertical,
+    var info = Column(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(coffee.name,
+        Text("${coffee.roaster} ${coffee.name}",
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         Text(coffee.tastingNotes.join(', '),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
             style: const TextStyle(fontStyle: FontStyle.italic)),
         OriginText(origins: coffee.origins),
       ],
@@ -159,10 +155,10 @@ class _CoffeesState extends ConsumerState<Coffees> {
       },
       splashColor: theme.primaryColor,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Thumbnail(thumbnailPath: coffee.thumbnailPath),
-          info,
+          Expanded(child: Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: info,)),
         ],
       ),
     );
