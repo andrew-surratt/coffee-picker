@@ -9,7 +9,7 @@ Future<List<String>> getTasteNotes() async {
       await tasteNotesDoc.get();
   List<String> tasteNotes = tasteNotesSnap.data()?.keys.toList() ?? [];
   if (kDebugMode) {
-    print("$tasteNotes");
+    print("getTasteNotes() $tasteNotes");
   }
   return tasteNotes;
 }
