@@ -17,13 +17,27 @@ var coffeeIndexDoc = FirebaseFirestore.instance
 Future<List<CoffeeIndex>> getCoffeeIndex() async {
   return await coffeeIndexDoc
       .get()
-      .then((value) =>
-          value
+      .then((value) {
+        print({"coffeeIndex", value
+            .data()
+            ?.values});
+          return List.from(value
               .data()
               ?.values
-              .map((e) => CoffeeIndex(roaster: e?['roaster'], name: e?['name']))
-              .toList() ??
-          []);
+              .map((e) {
+                try {
+                  return CoffeeIndex(roaster: e?['roaster'], name: e?['name']);
+                } catch (err) {
+                  if (kDebugMode) {
+                    print({"Error parsing coffee index (skipping):", err});
+                  }
+                  return null;
+                }
+              })
+              .where((e) => e != null)
+              .toList() ?? [])
+          ;
+        });
 }
 
 Future<void> upsertCoffeeIndex(String coffeeName, String roasterName, {bool createDoc = false}) async {
