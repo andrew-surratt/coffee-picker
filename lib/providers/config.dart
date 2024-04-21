@@ -6,10 +6,11 @@ class ConfigNotifier extends StateNotifier<Config> {
 }
 
 final configProvider = FutureProvider.autoDispose((ref) async {
-  var config = await getConfig();
-  return Config(
-    title: config.title,
-  );
+  return await getConfig();
 });
 
-final defaultConfig = Config(title: 'Coffee Picker');
+final defaultConfig = Config(title: 'Coffee Picker', defaultChartCoffeeNames: [
+  'Maxwell Medium',
+  'Starbucks (In Store)',
+  'Counter Culture Hologram',
+]);

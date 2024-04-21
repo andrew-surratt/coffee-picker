@@ -1,6 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coffee_picker/components/origin_text.dart';
 import 'package:coffee_picker/components/scaffold.dart';
 import 'package:coffee_picker/components/thumbnail.dart';
+import 'package:coffee_picker/providers/compareCoffees.dart';
 import 'package:coffee_picker/providers/icons.dart';
 import 'package:coffee_picker/services/auth.dart';
 import 'package:coffee_picker/utils/forms.dart';
@@ -21,6 +23,8 @@ class CoffeeInfo extends ConsumerStatefulWidget {
   ConsumerState<ConsumerStatefulWidget> createState() => _CoffeeInfo();
 }
 
+enum MenuItem { addToComparison }
+
 class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
   final _formKey = GlobalKey<FormState>();
   final double defaultRating = 3.0;
@@ -33,6 +37,7 @@ class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
     ratingController = defaultRating;
     User? user = getUser();
     Future<List<Rating>> ratings = getCoffeeRatings(widget.coffee);
+    List<CoffeeWithRating> coffeesWithRating = ref.watch(compareCoffeesProvider).state;
 
     return FutureBuilder(
         future: ratings,
@@ -65,7 +70,27 @@ class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
             buildForm(buildFormFields(context, ref, widget.coffee, user)),
             ...buildReview(reviews),
           ]);
-          return ScaffoldBuilder(body: inputForm);
+          return ScaffoldBuilder(
+            body: inputForm,
+            appBarActions: [
+              PopupMenuButton<MenuItem>(
+                onSelected: (MenuItem i) {
+                  switch (i) {
+                    case MenuItem.addToComparison:
+                      ref.read(compareCoffeesProvider).addCoffee(widget.coffee, getUser());
+                  }
+                },
+                itemBuilder: (BuildContext context) {
+                  return [
+                    const PopupMenuItem<MenuItem>(
+                      value: MenuItem.addToComparison,
+                      child: Text('Add to comparison'),
+                    ),
+                  ];
+                },
+              ),
+            ],
+          );
         });
   }
 
@@ -191,6 +216,7 @@ class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
             coffeeName: coffeeData.name,
             rating: ratingController,
             review: reviewController.text ?? '',
+            createdAt: Timestamp.now(),
           ),
         ).then((value) {
           setState(() {

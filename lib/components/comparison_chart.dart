@@ -1,11 +1,16 @@
-import 'package:coffee_picker/components/rating_input.dart';
 import 'package:coffee_picker/components/scaffold.dart';
+import 'package:coffee_picker/providers/compareCoffees.dart';
+import 'package:coffee_picker/repositories/ratings.dart';
+import 'package:coffee_picker/services/finance.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../repositories/coffees.dart';
 import '../services/coffee.dart';
+import 'coffees.dart';
+
+enum MenuItem { clearComparison }
 
 class ComparisonChart extends ConsumerWidget {
   final List<ChartComponent> chartComponents;
@@ -15,24 +20,63 @@ class ComparisonChart extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeData = Theme.of(context);
-    Future<List<Coffee>> coffees = getCoffees([
-      'Maxwell Medium',
-      'Starbucks (In Store)',
-      'Counter Culture Hologram',
-    ]);
 
-    return FutureBuilder(
-        future: coffees,
-        builder: (BuildContext context, AsyncSnapshot<List<Coffee>> snapshot) {
-          return ScaffoldBuilder(
-              body: buildChartBody(
-                  flBorderData: buildFlBorderData(themeData),
-                  themeData: themeData,
-                  context: context,
-                  chartComponent: chartComponents,
-                  coffeeData: snapshot.data ?? []),
-              floatingActionButton: buildFloatingActionButton(context));
-        });
+    var compareCoffeesNotifier = ref.watch(compareCoffeesProvider);
+    if(kDebugMode) {
+      print({"Using coffees for chart:", compareCoffeesNotifier.state});
+    }
+
+    return ScaffoldBuilder(
+        body: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(height: 100,child:
+                Padding(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    child: Column(children: [Text(
+                        'Opportunity Cost Of Coffee Over Time',
+                        style: themeData.textTheme.titleMedium,
+                      ),
+                      Text(
+                        'Shows potentially what the money spent on each coffee would become over time,'+
+                            ' assuming average yearly stock market returns (${(sp500AvgYearlyReturn * 100).truncate()}%),'+
+                            ' and average of $defaultNumberOfOzPerDay oz coffee per day',
+                        style: themeData.textTheme.bodySmall,
+                      ),
+                    ])
+                )
+              ),
+            Expanded(child:
+            buildChartBody(
+            flBorderData: buildFlBorderData(themeData),
+            themeData: themeData,
+            context: context,
+            chartComponent: chartComponents,
+            coffeeData: compareCoffeesNotifier.state)
+            )]),
+        appBarActions: [
+          PopupMenuButton<MenuItem>(
+            onSelected: (MenuItem i) {
+              switch (i) {
+                case MenuItem.clearComparison:
+                  ref.read(compareCoffeesProvider).clearCoffees();
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const Coffees()),
+                  );
+              }
+            },
+            itemBuilder: (BuildContext context) {
+              return [
+                const PopupMenuItem<MenuItem>(
+                  value: MenuItem.clearComparison,
+                  child: Text('Clear compared coffees'),
+                ),
+              ];
+            },
+          ),
+        ]
+        );
   }
 
   Padding buildChartBody(
@@ -40,7 +84,7 @@ class ComparisonChart extends ConsumerWidget {
       required ThemeData themeData,
       required BuildContext context,
       required List<ChartComponent> chartComponent,
-      required List<Coffee> coffeeData}) {
+      required List<CoffeeWithRating> coffeeData}) {
     LineTouchData lineTouchData = buildLineTouchData(themeData, coffeeData);
     LineChart lineChart = buildLineChart(
         lineTouchData: lineTouchData,
@@ -50,17 +94,7 @@ class ComparisonChart extends ConsumerWidget {
         chartComponent: chartComponents,
         coffeeData: coffeeData);
     return Padding(
-        padding: const EdgeInsets.fromLTRB(20, 40, 40, 20), child: lineChart);
-  }
-
-  FloatingActionButton buildFloatingActionButton(BuildContext context) {
-    return FloatingActionButton.small(
-        onPressed: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => RatingInput(),
-            )),
-        child: const Icon(Icons.navigate_next));
+        padding: const EdgeInsets.fromLTRB(20, 20, 40, 20), child: lineChart);
   }
 }
 
@@ -81,10 +115,10 @@ LineChart buildLineChart(
     required ThemeData themeData,
     required BuildContext context,
     required List<ChartComponent> chartComponent,
-    required List<Coffee> coffeeData}) {
+    required List<CoffeeWithRating> coffeeData}) {
   List<LineChartBarData> data = coffeeData.map((e) {
-    var data = createLineData(e.costPerOz, Colors.green);
-    var rating = 5; //e.rating;
+    LineChartBarData data = createLineData(e.coffee.costPerOz, Colors.green);
+    double? rating = e.rating?.rating;
     const maxAlpha = 255;
     const minAlpha = 100;
     const maxRating = 10;
@@ -99,11 +133,15 @@ LineChart buildLineChart(
     );
   }).toList();
 
+  double maxYValue = data
+      .map((e) => e.spots.reduce((value, element) => element.y > value.y ? element : value).y)
+      .reduce((value, element) => element > value ? element : value);
+  var maxYLabel = maxYValue * 1.5;
   return LineChart(LineChartData(
       minX: 0,
       maxX: 10,
       minY: 0,
-      maxY: 20000,
+      maxY: maxYLabel - (maxYLabel % 1000),
       lineTouchData: lineTouchData,
       titlesData: buildFlTitlesData(themeData, context),
       borderData: flBorderData,
@@ -135,12 +173,8 @@ FlTitlesData buildFlTitlesData(ThemeData themeData, BuildContext context) {
     rightTitles: const AxisTitles(
       sideTitles: SideTitles(showTitles: false),
     ),
-    topTitles: AxisTitles(
-      axisNameSize: 30,
-      axisNameWidget: Text(
-        'Opportunity Cost Compared to Investing',
-        style: themeData.textTheme.titleMedium,
-      ),
+    topTitles: const AxisTitles(
+      sideTitles: SideTitles(showTitles: false),
     ),
     leftTitles: AxisTitles(
       axisNameWidget: Text(
@@ -152,7 +186,7 @@ FlTitlesData buildFlTitlesData(ThemeData themeData, BuildContext context) {
   );
 }
 
-LineTouchData buildLineTouchData(ThemeData themeData, List<Coffee> coffeeData) {
+LineTouchData buildLineTouchData(ThemeData themeData, List<CoffeeWithRating> coffeeData) {
   return LineTouchData(
     handleBuiltInTouches: true,
     touchTooltipData: LineTouchTooltipData(
@@ -164,7 +198,7 @@ LineTouchData buildLineTouchData(ThemeData themeData, List<Coffee> coffeeData) {
           return touchedSpots.map((LineBarSpot touchedSpot) {
             var coffeeDataSelected = coffeeData[touchedSpot.barIndex % 4];
             return LineTooltipItem(
-                "${coffeeDataSelected.name} \$${touchedSpot.y.toString()} (\$${coffeeDataSelected.costPerOz}/oz)",
+                "${coffeeDataSelected.coffee.name} \$${touchedSpot.y.toString()} (\$${coffeeDataSelected.coffee.costPerOz}/oz)",
                 TextStyle(
                   color: touchedSpot.bar.gradient?.colors.first ??
                       touchedSpot.bar.color ??
