@@ -70,6 +70,9 @@ Future<List<Coffee>> getCoffees(List<String> coffeeNames) async {
       .get()
       .then((event) {
     List<Coffee> coffees = event.docs.map(docToCoffee).toList();
+    if (kDebugMode) {
+      print({"[repositories.getCoffees()]", coffees});
+    }
     return coffees;
   });
 }

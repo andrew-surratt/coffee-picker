@@ -148,7 +148,7 @@ class _CoffeesState extends ConsumerState<Coffees> {
     );
     return InkWell(
       onTap: () {
-        Navigator.pushReplacement(
+        Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => CoffeeInfo(coffee: coffee)),
         );

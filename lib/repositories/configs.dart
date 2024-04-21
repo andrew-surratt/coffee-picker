@@ -7,39 +7,45 @@ var configCollection = FirebaseFirestore.instance
     .withConverter(
         fromFirestore: (DocumentSnapshot<Map<String, dynamic>> snapshot, _) {
   var repoConfig = snapshot.data();
-  return RepoConfig(type: repoConfig?['type'], title: repoConfig?['title']);
+  return RepoConfig(
+      type: repoConfig?['type'],
+      title: repoConfig?['title'] ?? defaultConfig.title,
+      defaultChartCoffeeNames: repoConfig?['defaultChartCoffeeNames'] ?? defaultConfig.defaultChartCoffeeNames,
+  );
 }, toFirestore: (RepoConfig repoConfig, _) {
   return {
     'type': repoConfig.type,
     'title': repoConfig.title,
+    'defaultChartCoffeeNames': repoConfig.defaultChartCoffeeNames,
   };
 });
 
 Future<Config> getConfig() async {
-  return await configCollection.get().then((event) {
-    if (kDebugMode) {
-      for (var doc in event.docs) {
-        print("${doc.id} => ${doc.data()}");
-      }
-    }
+  return await configCollection.where('type', isEqualTo: 'default')
+      .get().then((event) {
+
     RepoConfig? defaultRepoConfig = event.docs
-        .where((QueryDocumentSnapshot<RepoConfig> element) {
-          return element.data().type == 'default';
+        .map((e) {
+          var data = e.data();
+          if (kDebugMode) {
+            print("${e.id} => $data");
+          }
+          return data;
         })
-        .firstOrNull
-        ?.data();
+        .firstOrNull;
     return defaultRepoConfig ?? defaultConfig;
   });
 }
 
 class Config {
   final String title;
+  final List<String> defaultChartCoffeeNames;
 
-  Config({required this.title});
+  Config({required this.title, required this.defaultChartCoffeeNames});
 }
 
 class RepoConfig extends Config {
   final String type;
 
-  RepoConfig({required this.type, required super.title});
+  RepoConfig({required this.type, required super.title, required super.defaultChartCoffeeNames});
 }

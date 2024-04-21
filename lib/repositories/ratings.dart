@@ -25,6 +25,45 @@ Future<List<Rating>> getUserRatings(User? user) async {
   });
 }
 
+Future<List<CoffeeWithRating>> getUserRatingsForCoffees(User user, List<Coffee> coffees) async {
+  return await ratingsCollection
+      .where('userRef', isEqualTo: user.uid)
+      .where('coffeeRef', whereIn: coffees.map((e) => e.ref))
+      .orderBy('createdAt')
+      .get()
+      .then((event) {
+        var ratings = event.docs.map((r) => r.data()).toList();
+        if (kDebugMode) {
+          print({"[repositories.getUserRatingsForCoffees()]", ratings});
+        }
+    return List.from(coffees
+        .map((c) {
+      try {
+        return CoffeeWithRating(coffee: c,
+            rating: ratings.where((r) => r.coffeeRef == c.ref).firstOrNull);
+      } catch(e) {
+        if (kDebugMode) {
+          print({'Error parsing coffee with rating info (skipping): ', e});
+        }
+        return null;
+      }
+    }).where((element) => element != null));
+  });
+}
+
+Future<CoffeeWithRating> getUserRatingForCoffee(User user, Coffee coffee) async {
+  return await ratingsCollection
+      .where('userRef', isEqualTo: user.uid)
+      .where('coffeeRef', isEqualTo: coffee.ref)
+      .orderBy('createdAt')
+      .get()
+      .then((event) {
+        var ratings = event.docs.map((r) => r.data()).toList();
+        return CoffeeWithRating(coffee: coffee,
+            rating: ratings.where((r) => r.coffeeRef == coffee.ref).firstOrNull);
+      });
+}
+
 Future<List<Rating>> getCoffeeRatings(Coffee coffee) async {
   return await ratingsCollection
       .where('coffeeRef', isEqualTo: coffee.ref)
@@ -51,6 +90,7 @@ Rating fromJson(Map<String, dynamic>? json) {
     coffeeName: json?['coffeeName'],
     rating: json?['rating'],
     review: json?['review'],
+    createdAt: json?['createdAt']
   );
 }
 
@@ -62,6 +102,7 @@ Map<String, dynamic> toJson(Rating rating) {
     'coffeeName': rating.coffeeName,
     'rating': rating.rating,
     'review': rating.review,
+    'createdAt': rating.createdAt,
   };
 }
 
@@ -73,6 +114,7 @@ class Rating {
     required this.coffeeName,
     required this.rating,
     required this.review,
+    required this.createdAt,
   });
 
   final String userRef;
@@ -81,4 +123,12 @@ class Rating {
   final String coffeeName;
   final double rating;
   final String review;
+  final Timestamp createdAt;
+}
+
+class CoffeeWithRating {
+  final Coffee coffee;
+  final Rating? rating;
+
+  CoffeeWithRating({required this.coffee, this.rating});
 }

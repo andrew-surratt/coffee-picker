@@ -4,6 +4,7 @@ import 'package:coffee_picker/components/user_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../providers/compareCoffees.dart';
 import '../providers/config.dart';
 import '../repositories/configs.dart';
 import 'coffee_input.dart';
@@ -15,11 +16,15 @@ class ScaffoldBuilder extends ConsumerWidget {
 
   final FloatingActionButton? floatingActionButton;
 
-  const ScaffoldBuilder(
-      {super.key,
-      required this.body,
-      this.widgetTitle,
-      this.floatingActionButton});
+  final List<Widget>? appBarActions;
+
+  const ScaffoldBuilder({
+    super.key,
+    required this.body,
+    this.widgetTitle,
+    this.floatingActionButton,
+    this.appBarActions
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,6 +35,7 @@ class ScaffoldBuilder extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: themeData.colorScheme.primary,
         title: Text(config.value?.title ?? defaultConfig.title),
+        actions: appBarActions,
       ),
       body: Padding(
         padding: const EdgeInsets.all(5),
@@ -66,15 +72,6 @@ class ScaffoldBuilder extends ConsumerWidget {
               Navigator.pop(context);
               Navigator.pushReplacement(context,
                   MaterialPageRoute(builder: (context) => const Coffees()));
-            },
-          ),
-          ListTile(
-            title: const Text('Demo'),
-            leading: const Icon(Icons.construction),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.pushReplacement(
-                  context, MaterialPageRoute(builder: (context) => CoffeeInput()));
             },
           ),
           ListTile(
