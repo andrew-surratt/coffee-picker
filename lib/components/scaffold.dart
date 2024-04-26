@@ -4,10 +4,8 @@ import 'package:coffee_picker/components/user_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../providers/compareCoffees.dart';
 import '../providers/config.dart';
 import '../repositories/configs.dart';
-import 'coffee_input.dart';
 
 class ScaffoldBuilder extends ConsumerWidget {
   final Widget body;
@@ -34,6 +32,7 @@ class ScaffoldBuilder extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: themeData.colorScheme.primary,
+        foregroundColor: themeData.colorScheme.secondaryContainer,
         title: Text(config.value?.title ?? defaultConfig.title),
         actions: appBarActions,
       ),
@@ -53,7 +52,7 @@ class ScaffoldBuilder extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           SizedBox(
-            height: 80,
+            height: 140,
             child: DrawerHeader(
               decoration: BoxDecoration(color: theme.primaryColor),
               padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
