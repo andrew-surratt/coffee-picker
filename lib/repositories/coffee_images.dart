@@ -16,13 +16,16 @@ void uploadImage(File file, String uploadedPath) async {
   }
 }
 
-Future<Uint8List?> downloadImage(String downloadPath) async {
+Future<Uint8List?> downloadImage(String? downloadPath) async {
   try {
+    if (downloadPath == null || downloadPath.isEmpty) {
+      return null;
+    }
     const oneMegabyte = 1024 * 1024;
     return await storageRef.child(downloadPath).getData(oneMegabyte);
-  } on FirebaseException catch (e) {
+  } catch (e) {
     if (kDebugMode) {
-      print({'Error downloading image: ', e});
+      print({'Error downloading image at path "$downloadPath": ', e});
     }
     return Future.error(e);
   }
