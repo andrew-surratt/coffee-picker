@@ -18,10 +18,7 @@ class Thumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (thumbnailPath == null) {
-      return buildSizedBox(context: context);
-    }
-    Future<Uint8List?> thumbnail = downloadImage(thumbnailPath!);
+    Future<Uint8List?> thumbnail = downloadImage(thumbnailPath);
     return FutureBuilder(
         future: thumbnail,
         builder: (BuildContext context, AsyncSnapshot<Uint8List?> snapshot) {
