@@ -37,7 +37,6 @@ class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
     ratingController = defaultRating;
     User? user = getUser();
     Future<List<Rating>> ratings = getCoffeeRatings(widget.coffee);
-    List<CoffeeWithRating> coffeesWithRating = ref.watch(compareCoffeesProvider).state;
 
     return FutureBuilder(
         future: ratings,

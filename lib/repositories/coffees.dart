@@ -18,9 +18,11 @@ Future<List<CoffeeIndex>> getCoffeeIndex() async {
   return await coffeeIndexDoc
       .get()
       .then((value) {
-        print({"coffeeIndex", value
-            .data()
-            ?.values});
+        if (kDebugMode) {
+          print({"coffeeIndex", value
+              .data()
+              ?.values});
+        }
           return List.from(value
               .data()
               ?.values

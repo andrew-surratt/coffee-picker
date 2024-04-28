@@ -11,12 +11,14 @@ var configCollection = FirebaseFirestore.instance
       type: repoConfig?['type'],
       title: repoConfig?['title'] ?? defaultConfig.title,
       defaultChartCoffeeNames: repoConfig?['defaultChartCoffeeNames'] ?? defaultConfig.defaultChartCoffeeNames,
+      defaultRoasterQuery: repoConfig?['defaultRoasterQuery'] ?? defaultConfig.defaultRoasterQuery
   );
 }, toFirestore: (RepoConfig repoConfig, _) {
   return {
     'type': repoConfig.type,
     'title': repoConfig.title,
     'defaultChartCoffeeNames': repoConfig.defaultChartCoffeeNames,
+    'defaultRoasterQuery': repoConfig.defaultRoasterQuery
   };
 });
 
@@ -40,12 +42,13 @@ Future<Config> getConfig() async {
 class Config {
   final String title;
   final List<String> defaultChartCoffeeNames;
+  final String defaultRoasterQuery;
 
-  Config({required this.title, required this.defaultChartCoffeeNames});
+  Config({required this.title, required this.defaultChartCoffeeNames, required this.defaultRoasterQuery});
 }
 
 class RepoConfig extends Config {
   final String type;
 
-  RepoConfig({required this.type, required super.title, required super.defaultChartCoffeeNames});
+  RepoConfig({required this.type, required super.title, required super.defaultChartCoffeeNames, required super.defaultRoasterQuery});
 }
