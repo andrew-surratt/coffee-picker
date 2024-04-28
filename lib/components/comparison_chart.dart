@@ -52,7 +52,7 @@ class ComparisonChart extends ConsumerWidget {
             themeData: themeData,
             context: context,
             chartComponent: chartComponents,
-            coffeeData: compareCoffeesNotifier.state)
+            coffeeData: compareCoffeesNotifier.state ?? [])
             )]),
         appBarActions: [
           PopupMenuButton<MenuItem>(
@@ -133,15 +133,16 @@ LineChart buildLineChart(
     );
   }).toList();
 
+  const double chartYLabelDivisions = 1000;
   double maxYValue = data
       .map((e) => e.spots.reduce((value, element) => element.y > value.y ? element : value).y)
-      .reduce((value, element) => element > value ? element : value);
+      .fold(chartYLabelDivisions, (value, element) => element > value ? element : value);
   var maxYLabel = maxYValue * 1.5;
   return LineChart(LineChartData(
       minX: 0,
       maxX: 10,
       minY: 0,
-      maxY: maxYLabel - (maxYLabel % 1000),
+      maxY: maxYLabel - (maxYLabel % chartYLabelDivisions),
       lineTouchData: lineTouchData,
       titlesData: buildFlTitlesData(themeData, context),
       borderData: flBorderData,
