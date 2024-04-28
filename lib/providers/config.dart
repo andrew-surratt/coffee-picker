@@ -9,7 +9,10 @@ final configProvider = FutureProvider.autoDispose((ref) async {
   return await getConfig();
 });
 
-final defaultConfig = Config(title: 'Coffee Picker', defaultChartCoffeeNames: [
+final defaultConfig = Config(
+    title: 'Coffee Picker',
+    defaultRoasterQuery: 'Counter Culture',
+    defaultChartCoffeeNames: [
   'Maxwell Medium',
   'Starbucks (In Store)',
   'Counter Culture Hologram',

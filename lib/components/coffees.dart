@@ -3,8 +3,10 @@ import 'package:coffee_picker/components/coffee_input.dart';
 import 'package:coffee_picker/components/scaffold.dart';
 import 'package:coffee_picker/components/thumbnail.dart';
 import 'package:coffee_picker/providers/coffeesIndex.dart';
+import 'package:coffee_picker/providers/config.dart';
 import 'package:coffee_picker/providers/roastersIndex.dart';
 import 'package:coffee_picker/repositories/coffees.dart';
+import 'package:coffee_picker/repositories/configs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -18,9 +20,16 @@ class Coffees extends ConsumerStatefulWidget {
 }
 
 class _CoffeesState extends ConsumerState<Coffees> {
-  Future<List<Coffee>> coffees = Future.value([]);
+  late Future<List<Coffee>> coffees;
   String roasterSearch = '';
   String nameSearch = '';
+
+  @override
+  void initState() {
+    super.initState();
+    AsyncValue<Config> config = ref.read(configProvider);
+    coffees = getCoffeesByRoaster(config.value?.defaultRoasterQuery ?? defaultConfig.defaultRoasterQuery);
+  }
 
   @override
   Widget build(BuildContext context) {
