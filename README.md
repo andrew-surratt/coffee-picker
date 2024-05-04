@@ -25,3 +25,11 @@ Multi-platform app to help you choose your next brew
 ## Updating App Icons
 
 See [flutter_launcher_icons](https://pub.dev/packages/flutter_launcher_icons) documentation
+
+## Build
+
+`flutter build [package type]`
+
+## Release
+
+`firebase appdistribution:distribute [app location] --app [app id] --release-notes "[release notes]" --testers "[tester emails]"`
