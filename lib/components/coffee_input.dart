@@ -22,6 +22,7 @@ import '../services/coffee.dart';
 import '../services/finance.dart';
 import '../utils/forms.dart';
 import '../utils/uuid.dart';
+import 'coffee.dart';
 import 'coffees.dart';
 
 class CoffeeInput extends ConsumerStatefulWidget {
@@ -314,11 +315,11 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
       padding: const EdgeInsets.symmetric(vertical: 16.0),
       child: FilledButton(
         onPressed: () {
-          submitCoffee(context).then((e) {
+          submitCoffee(context).then((coffee) {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const Coffees(),
+                  builder: (context) => CoffeeInfo(coffee: coffee),
                 ));
           });
         },
@@ -327,7 +328,7 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
     );
   }
 
-  Future<void> submitCoffee(BuildContext context) async {
+  Future<Coffee> submitCoffee(BuildContext context) async {
     _formKey.currentState?.validate();
 
     var costValue = double.parse(cost.value.text);
@@ -350,7 +351,7 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
 
     var coffeeName = name.value.text;
     var roaster = roasterName.value.text;
-    addCoffee(CoffeeCreateReq(
+    var coffee = await addCoffee(CoffeeCreateReq(
       roaster: roaster,
       name: coffeeName,
       costPerOz: costPerOz,
@@ -389,5 +390,7 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
     });
 
     ref.invalidate(tasteNotesProvider);
+
+    return coffee;
   }
 }
