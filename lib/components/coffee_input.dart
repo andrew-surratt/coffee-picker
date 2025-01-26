@@ -2,10 +2,10 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:coffee_picker/components/scaffold.dart';
-import 'package:coffee_picker/providers/coffeesIndex.dart';
-import 'package:coffee_picker/providers/originsIndex.dart';
-import 'package:coffee_picker/providers/roastersIndex.dart';
-import 'package:coffee_picker/providers/tasteNotes.dart';
+import 'package:coffee_picker/providers/coffees_index.dart';
+import 'package:coffee_picker/providers/origins_index.dart';
+import 'package:coffee_picker/providers/roasters_index.dart';
+import 'package:coffee_picker/providers/taste_notes.dart';
 import 'package:coffee_picker/repositories/coffee_images.dart';
 import 'package:coffee_picker/repositories/origins.dart';
 import 'package:coffee_picker/repositories/roasters.dart';
@@ -23,7 +23,7 @@ import '../services/finance.dart';
 import '../utils/forms.dart';
 import '../utils/uuid.dart';
 import 'coffee.dart';
-import 'coffees.dart';
+import 'multi_tag_field.dart';
 
 class CoffeeInput extends ConsumerStatefulWidget {
   const CoffeeInput({super.key});
@@ -37,7 +37,7 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
   final roasterName = TextEditingController();
   final roasterFocusNode = FocusNode();
   final name = TextEditingController();
-  final tasteNotesController = TextfieldTagsController();
+  final tasteNotesController = DynamicTagController<DynamicTagData>();
   final cost = TextEditingController();
   final weight = TextEditingController();
 
@@ -55,7 +55,6 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
 
   @override
   Widget build(BuildContext context) {
-    var theme = Theme.of(context);
     AsyncValue<List<String>> tasteNotes = ref.watch(tasteNotesProvider);
     AsyncValue<List<String>> roastersIndex = ref.watch(roastersIndexProvider);
     var uiSettings = buildCropperUISettings(context);
@@ -91,13 +90,10 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
             ),
             Padding(
               padding: itemPadding,
-              child: buildMultiTagField(
-                  controller: tasteNotesController,
-                  label: 'Tasting notes',
-                  hintText: 'chocolate',
-                  tagColor: theme.primaryColor,
-                  theme: theme,
-                  autocompleteOptions: tasteNotes.value ?? []),
+              child: DynamicAutoCompleteTags(
+                dynamicTagController: tasteNotesController,
+                initialTags: tasteNotes.value?.map((t) => DynamicTagData(t, null)).toList() ?? [],
+              )
             ),
             Padding(
               padding: itemPadding,
@@ -178,7 +174,7 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
                     _image!,
                     fit: BoxFit.scaleDown,
                     repeat: ImageRepeat.noRepeat,
-                    width: 256,
+                    width: 460,
                   ),
           ),
         ),
@@ -213,8 +209,8 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
   }) async {
     XFile? image = await ImagePicker().pickImage(
       source: ImageSource.gallery,
-      maxHeight: 256,
-      maxWidth: 256,
+      maxHeight: 460,
+      maxWidth: 460,
     );
 
     if (image == null) {
@@ -223,9 +219,7 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
 
     CroppedFile? croppedFile = await ImageCropper().cropImage(
       sourcePath: image.path,
-      aspectRatioPresets: [
-        CropAspectRatioPreset.square,
-      ],
+      aspectRatio: CropAspectRatio(ratioX: 1,ratioY: 1),
       uiSettings: uiSettings,
     );
 
@@ -316,11 +310,14 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
       child: FilledButton(
         onPressed: () {
           submitCoffee(context).then((coffee) {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CoffeeInfo(coffee: coffee),
+            if (context.mounted) {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder:
+                       (context) => CoffeeInfo(coffee: coffee),
                 ));
+            }
           });
         },
         child: const Text('Submit'),
@@ -355,7 +352,7 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
       roaster: roaster,
       name: coffeeName,
       costPerOz: costPerOz,
-      tastingNotes: tasteNotesController.getTags ?? [],
+      tastingNotes: tasteNotesController.getTags?.map((e) => e.tag).toList() ?? [],
       usdaOrganic: isOrganic,
       fairTrade: isFairTrade,
       thumbnailPath: uploadedPath,
@@ -386,7 +383,7 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
     ref.invalidate(originIndexProvider);
 
     tasteNotesController.getTags?.forEach((element) {
-      addTastingNote(element);
+      addTastingNote(element.tag);
     });
 
     ref.invalidate(tasteNotesProvider);

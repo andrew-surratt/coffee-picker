@@ -1,5 +1,5 @@
 import 'package:coffee_picker/components/scaffold.dart';
-import 'package:coffee_picker/providers/compareCoffees.dart';
+import 'package:coffee_picker/providers/compare_coffees.dart';
 import 'package:coffee_picker/repositories/ratings.dart';
 import 'package:coffee_picker/services/finance.dart';
 import 'package:flutter/foundation.dart';
@@ -38,9 +38,9 @@ class ComparisonChart extends ConsumerWidget {
                         style: themeData.textTheme.titleMedium,
                       ),
                       Text(
-                        'Shows potentially what the money spent on each coffee would become over time,'+
-                            ' assuming average yearly stock market returns (${(sp500AvgYearlyReturn * 100).truncate()}%),'+
-                            ' and average of $defaultNumberOfOzPerDay oz coffee per day',
+                        "Shows potentially what the money spent on each coffee would become over time,"
+                        " assuming average yearly stock market returns (${(sp500AvgYearlyReturn * 100).truncate()}%),"
+                        " and average of $defaultNumberOfOzPerDay oz coffee per day",
                         style: themeData.textTheme.bodySmall,
                       ),
                     ])
@@ -52,7 +52,7 @@ class ComparisonChart extends ConsumerWidget {
             themeData: themeData,
             context: context,
             chartComponent: chartComponents,
-            coffeeData: compareCoffeesNotifier.state ?? [])
+            coffeeData: compareCoffeesNotifier.state)
             )]),
         appBarActions: [
           PopupMenuButton<MenuItem>(
@@ -192,7 +192,6 @@ LineTouchData buildLineTouchData(ThemeData themeData, List<CoffeeWithRating> cof
     handleBuiltInTouches: true,
     touchTooltipData: LineTouchTooltipData(
         maxContentWidth: 300,
-        tooltipBgColor: themeData.scaffoldBackgroundColor.withOpacity(0.2),
         fitInsideHorizontally: true,
         fitInsideVertically: true,
         getTooltipItems: (List<LineBarSpot> touchedSpots) {
@@ -242,7 +241,7 @@ SideTitles getSideTitles({
       interval: interval,
       getTitlesWidget: (double value, TitleMeta meta) {
         return SideTitleWidget(
-          axisSide: meta.axisSide,
+          meta: meta,
           child: getTitleText(value, context),
         );
       });

@@ -1,4 +1,4 @@
-package com.example.coffee_picker
+package com.alkalinedev.coffee_picker
 
 import io.flutter.embedding.android.FlutterActivity
 
