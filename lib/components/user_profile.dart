@@ -132,7 +132,9 @@ class _UserProfile extends ConsumerState<UserProfile> {
       var name = displayNameController.text;
       if (name.isNotEmpty) {
         updateDisplayName(name).then((_) {
-          ScaffoldMessenger.of(context).showSnackBar(snackBarSuccess);
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(snackBarSuccess);
+          }
           setState(() {
             isButtonDisabled = true;
             cleanupProfileFields();
@@ -142,7 +144,9 @@ class _UserProfile extends ConsumerState<UserProfile> {
           if (kDebugMode) {
             print({"Failed to update user: ", e});
           }
-          ScaffoldMessenger.of(context).showSnackBar(snackBarError);
+          if(context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(snackBarError);
+          }
         });
       }
     };

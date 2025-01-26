@@ -193,25 +193,16 @@ class CoffeeCreateReq {
 
 class Coffee extends CoffeeCreateReq {
   Coffee({
-    required roaster,
-    required name,
-    required costPerOz,
-    required tastingNotes,
-    required origins,
-    required usdaOrganic,
-    required fairTrade,
-    required thumbnailPath,
+    required super.roaster,
+    required super.name,
+    required super.costPerOz,
+    required super.tastingNotes,
+    required super.origins,
+    required super.usdaOrganic,
+    required super.fairTrade,
+    required super.thumbnailPath,
     required this.ref,
-  }) : super(
-          roaster: roaster,
-          name: name,
-          costPerOz: costPerOz,
-          tastingNotes: tastingNotes,
-          origins: origins,
-          usdaOrganic: usdaOrganic,
-          fairTrade: fairTrade,
-          thumbnailPath: thumbnailPath,
-        );
+  });
 
   final String ref;
 }

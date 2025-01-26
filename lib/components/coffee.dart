@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coffee_picker/components/origin_text.dart';
 import 'package:coffee_picker/components/scaffold.dart';
 import 'package:coffee_picker/components/thumbnail.dart';
-import 'package:coffee_picker/providers/compareCoffees.dart';
+import 'package:coffee_picker/providers/compare_coffees.dart';
 import 'package:coffee_picker/providers/icons.dart';
 import 'package:coffee_picker/services/auth.dart';
 import 'package:coffee_picker/utils/forms.dart';
@@ -214,7 +214,7 @@ class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
             coffeeRef: coffeeData.ref,
             coffeeName: coffeeData.name,
             rating: ratingController,
-            review: reviewController.text ?? '',
+            review: reviewController.text,
             createdAt: Timestamp.now(),
           ),
         ).then((value) {

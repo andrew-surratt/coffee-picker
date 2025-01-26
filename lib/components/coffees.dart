@@ -2,9 +2,9 @@ import 'package:coffee_picker/components/coffee.dart';
 import 'package:coffee_picker/components/coffee_input.dart';
 import 'package:coffee_picker/components/scaffold.dart';
 import 'package:coffee_picker/components/thumbnail.dart';
-import 'package:coffee_picker/providers/coffeesIndex.dart';
+import 'package:coffee_picker/providers/coffees_index.dart';
 import 'package:coffee_picker/providers/config.dart';
-import 'package:coffee_picker/providers/roastersIndex.dart';
+import 'package:coffee_picker/providers/roasters_index.dart';
 import 'package:coffee_picker/repositories/coffees.dart';
 import 'package:coffee_picker/repositories/configs.dart';
 import 'package:flutter/material.dart';
@@ -80,7 +80,7 @@ class _CoffeesState extends ConsumerState<Coffees> {
         builder: (BuildContext context, SearchController controller) {
       return SearchBar(
         controller: controller,
-        padding: const MaterialStatePropertyAll<EdgeInsets>(
+        padding: const WidgetStatePropertyAll<EdgeInsets>(
             EdgeInsets.symmetric(horizontal: 16.0)),
         onTap: () {
           controller.openView();

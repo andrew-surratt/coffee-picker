@@ -14,10 +14,7 @@ enum LoginAction {
 }
 
 class Login extends ConsumerStatefulWidget {
-  Login({super.key});
-
-  String usernameError = '';
-  String passwordError = '';
+  const Login({super.key});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _LoginState();
@@ -29,6 +26,9 @@ class _LoginState extends ConsumerState<Login> {
   final passwordField = TextEditingController();
   final signupButtonName = 'Signup';
   final loginButtonName = 'Login';
+
+  String usernameError = '';
+  String passwordError = '';
   LoginAction currentLoginAction = LoginAction.login;
 
   @override
@@ -47,21 +47,21 @@ class _LoginState extends ConsumerState<Login> {
                       controller: usernameField,
                       label: 'Email',
                       hint: 'name@provider.com',
-                      validationText: () => widget.usernameError,
+                      validationText: () => usernameError,
                       emptyValidationText: 'Email is required.',
                       textInputType: TextInputType.emailAddress,
-                      isInvalid: (_) => widget.usernameError.isNotEmpty)),
+                      isInvalid: (_) => usernameError.isNotEmpty)),
               Padding(
                   padding: const EdgeInsets.all(10),
                   child: buildFormFieldText(
                       controller: passwordField,
                       label: 'Password',
                       hint: '***',
-                      validationText: () => widget.passwordError,
+                      validationText: () => passwordError,
                       emptyValidationText: 'Password is required.',
                       textInputType: TextInputType.visiblePassword,
                       obscureText: true,
-                      isInvalid: (_) => widget.passwordError.isNotEmpty)),
+                      isInvalid: (_) => passwordError.isNotEmpty)),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 10.0),
                 child: ElevatedButton(
@@ -117,14 +117,14 @@ class _LoginState extends ConsumerState<Login> {
   void handleSignupError(e) {
     if (e is FirebaseAuthException) {
       if (e.code == 'weak-password') {
-        widget.passwordError = 'The password must be more than 6 characters.';
+        passwordError = 'The password must be more than 6 characters.';
       } else if (e.code == 'email-already-in-use') {
-        widget.usernameError = 'The account already exists for that email.';
+        usernameError = 'The account already exists for that email.';
       } else {
-        widget.passwordError = 'Error signing up.';
+        passwordError = 'Error signing up.';
       }
     } else {
-      widget.passwordError = 'Error handling sign up.';
+      passwordError = 'Error handling sign up.';
     }
     runFormValidation();
   }
@@ -132,14 +132,14 @@ class _LoginState extends ConsumerState<Login> {
   void handleLoginError(e) {
     if (e is FirebaseAuthException) {
       if (e.code == 'user-not-found') {
-        widget.usernameError = 'No user found for that email.';
+        usernameError = 'No user found for that email.';
       } else if (e.code == 'wrong-password') {
-        widget.passwordError = 'Wrong password provided for that user.';
+        passwordError = 'Wrong password provided for that user.';
       } else {
-        widget.passwordError = 'Error logging in.';
+        passwordError = 'Error logging in.';
       }
     } else {
-      widget.passwordError = 'Error handling log in.';
+      passwordError = 'Error handling log in.';
     }
     runFormValidation();
   }
@@ -161,8 +161,8 @@ class _LoginState extends ConsumerState<Login> {
   }
 
   void clearLoginErrors() {
-    widget.usernameError = '';
-    widget.passwordError = '';
+    usernameError = '';
+    passwordError = '';
     runFormValidation();
   }
 
