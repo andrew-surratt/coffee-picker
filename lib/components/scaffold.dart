@@ -41,11 +41,11 @@ class ScaffoldBuilder extends ConsumerWidget {
         child: Center(child: body),
       ),
       floatingActionButton: floatingActionButton,
-      drawer: buildDrawer(context),
+      drawer: buildDrawer(context, config),
     );
   }
 
-  Drawer buildDrawer(BuildContext context) {
+  Drawer buildDrawer(BuildContext context, AsyncValue<Config> config) {
     var theme = Theme.of(context);
     return Drawer(
       child: Column(
@@ -73,7 +73,7 @@ class ScaffoldBuilder extends ConsumerWidget {
                   MaterialPageRoute(builder: (context) => const Coffees()));
             },
           ),
-          ListTile(
+          if(config.value?.isComparisonChartEnabled ?? false) ListTile(
             title: const Text('Compare'),
             leading: const Icon(Icons.bar_chart),
             onTap: () {
@@ -88,7 +88,9 @@ class ScaffoldBuilder extends ConsumerWidget {
             },
           ),
           const Spacer(),
-          ListTile(
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child:ListTile(
             title: const Text('Profile'),
             leading: const Icon(Icons.person),
             onTap: () {
@@ -99,7 +101,7 @@ class ScaffoldBuilder extends ConsumerWidget {
                     builder: (context) => const UserProfile(),
                   ));
             },
-          )
+          )),
         ],
       ),
     );

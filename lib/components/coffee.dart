@@ -11,7 +11,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../providers/config.dart';
 import '../repositories/coffees.dart';
+import '../repositories/configs.dart';
 import '../repositories/ratings.dart';
 
 class CoffeeInfo extends ConsumerStatefulWidget {
@@ -37,6 +39,7 @@ class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
     ratingController = defaultRating;
     User? user = getUser();
     Future<List<Rating>> ratings = getCoffeeRatings(widget.coffee);
+    final AsyncValue<Config> config = ref.watch(configProvider);
 
     return FutureBuilder(
         future: ratings,
@@ -71,7 +74,7 @@ class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
           ]);
           return ScaffoldBuilder(
             body: inputForm,
-            appBarActions: [
+            appBarActions: (config.value?.isComparisonChartEnabled ?? false) ? [
               PopupMenuButton<MenuItem>(
                 onSelected: (MenuItem i) {
                   switch (i) {
@@ -88,7 +91,7 @@ class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
                   ];
                 },
               ),
-            ],
+            ]:null,
           );
         });
   }

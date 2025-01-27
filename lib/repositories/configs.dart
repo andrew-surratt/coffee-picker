@@ -10,6 +10,7 @@ var configCollection = FirebaseFirestore.instance
   return RepoConfig(
       type: repoConfig?['type'],
       title: repoConfig?['title'] ?? defaultConfig.title,
+      isComparisonChartEnabled: repoConfig?['isComparisonChartEnabled'] ?? defaultConfig.isComparisonChartEnabled,
       defaultChartCoffeeNames: repoConfig?['defaultChartCoffeeNames'] ?? defaultConfig.defaultChartCoffeeNames,
       defaultRoasterQuery: repoConfig?['defaultRoasterQuery'] ?? defaultConfig.defaultRoasterQuery
   );
@@ -17,6 +18,7 @@ var configCollection = FirebaseFirestore.instance
   return {
     'type': repoConfig.type,
     'title': repoConfig.title,
+    'isComparisonChartEnabled': repoConfig.isComparisonChartEnabled,
     'defaultChartCoffeeNames': repoConfig.defaultChartCoffeeNames,
     'defaultRoasterQuery': repoConfig.defaultRoasterQuery
   };
@@ -41,14 +43,15 @@ Future<Config> getConfig() async {
 
 class Config {
   final String title;
+  final bool isComparisonChartEnabled;
   final List<String> defaultChartCoffeeNames;
   final String defaultRoasterQuery;
 
-  Config({required this.title, required this.defaultChartCoffeeNames, required this.defaultRoasterQuery});
+  Config({required this.title, required this.isComparisonChartEnabled, required this.defaultChartCoffeeNames, required this.defaultRoasterQuery});
 }
 
 class RepoConfig extends Config {
   final String type;
 
-  RepoConfig({required this.type, required super.title, required super.defaultChartCoffeeNames, required super.defaultRoasterQuery});
+  RepoConfig({required this.type, required super.title, required super.isComparisonChartEnabled, required super.defaultChartCoffeeNames, required super.defaultRoasterQuery});
 }
