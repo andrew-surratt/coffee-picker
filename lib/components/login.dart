@@ -37,7 +37,8 @@ class _LoginState extends ConsumerState<Login> {
         padding: const EdgeInsets.all(10),
         child: Form(
           key: _formKey,
-          child: Column(
+          child: AutofillGroup(
+              child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -45,6 +46,7 @@ class _LoginState extends ConsumerState<Login> {
                   padding: const EdgeInsets.all(10),
                   child: buildFormFieldText(
                       controller: usernameField,
+                      autofillHints: [AutofillHints.username],
                       label: 'Email',
                       hint: 'name@provider.com',
                       validationText: () => usernameError,
@@ -55,6 +57,7 @@ class _LoginState extends ConsumerState<Login> {
                   padding: const EdgeInsets.all(10),
                   child: buildFormFieldText(
                       controller: passwordField,
+                      autofillHints: [AutofillHints.password],
                       label: 'Password',
                       hint: '***',
                       validationText: () => passwordError,
@@ -78,7 +81,7 @@ class _LoginState extends ConsumerState<Login> {
                 ),
               ),
             ],
-          ),
+          )),
         ));
     return ScaffoldBuilder(body: inputForm);
   }
