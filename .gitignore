@@ -34,3 +34,4 @@ firebase_app_id_file.json
 GoogleService-Info.plist
 firebase_options.dart
 google-services.json
+**.log

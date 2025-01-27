@@ -11,6 +11,7 @@ final configProvider = FutureProvider.autoDispose((ref) async {
 
 final defaultConfig = Config(
     title: 'Coffee Picker',
+    isComparisonChartEnabled: false,
     defaultRoasterQuery: 'Counter Culture',
     defaultChartCoffeeNames: [
   'Maxwell Medium',

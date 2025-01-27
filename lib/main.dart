@@ -1,4 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
+import 'components/coffees.dart';
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -38,6 +41,22 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
-    return Login();
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.userChanges(),
+      initialData: FirebaseAuth.instance.currentUser,
+      builder: (BuildContext context, AsyncSnapshot<User?> snapshot) {
+        // Check if user is logged in
+        final String? uid = snapshot.data?.uid;
+
+        if (uid != null) {
+          if(kDebugMode) {
+            print("Already logged in as '${snapshot.data?.displayName}', navigating home.");
+          }
+          return Coffees();
+        }
+
+        return Login();
+      },
+    );
   }
 }
