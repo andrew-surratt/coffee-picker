@@ -1,5 +1,7 @@
+import 'package:coffee_picker/components/login.dart';
 import 'package:coffee_picker/components/scaffold.dart';
 import 'package:coffee_picker/services/auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -57,7 +59,19 @@ class _UserProfile extends ConsumerState<UserProfile> {
               child: FilledButton(
                 onPressed: isButtonDisabled ? null : onUpdatePressed(context),
                 child: const Text('Update'),
-              ))
+              )),
+          Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: FilledButton(
+                onPressed: () {
+                  setState(() {
+                    FirebaseAuth.instance.signOut();
+                    Navigator.pushReplacement(context,
+                        MaterialPageRoute(builder: (context) => const Login()));
+                  });
+                },
+                child: const Text('Logout'),
+              )),
         ]));
     return ScaffoldBuilder(body: inputForm);
   }
