@@ -107,6 +107,7 @@ TextFormField buildFormFieldText({
   required TextEditingController controller,
   required String label,
   required String hint,
+  Iterable<String>? autofillHints,
   String Function()? validationText,
   String? emptyValidationText,
   TextInputType? textInputType,
@@ -118,6 +119,7 @@ TextFormField buildFormFieldText({
   return buildTextFormField(
     controller: controller,
     hint: hint,
+    autofillHints: autofillHints,
     label: label,
     validationText: validationText,
     emptyValidationText: emptyValidationText,
@@ -133,6 +135,7 @@ TextFormField buildTextFormField({
   required TextEditingController controller,
   required String label,
   required String hint,
+  Iterable<String>? autofillHints,
   FocusNode? focusNode,
   String Function()? validationText,
   String? emptyValidationText,
@@ -145,6 +148,7 @@ TextFormField buildTextFormField({
   return TextFormField(
     controller: controller,
     focusNode: focusNode,
+    autofillHints: autofillHints,
     keyboardType: textInputType,
     obscureText: obscureText,
     readOnly: readOnly,
