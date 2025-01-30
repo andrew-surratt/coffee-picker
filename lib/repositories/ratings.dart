@@ -84,6 +84,10 @@ Future<List<Rating>> getCoffeeRatings(Coffee coffee) async {
 }
 
 Future<DocumentSnapshot<Rating>> addRating(Rating rating) async {
+  if (kDebugMode) {
+    print(
+        "Adding rating for coffee '${rating.coffeeName}': user '${rating.userName}', ${toJson(rating)}");
+  }
   return await ratingsCollection.add(rating).then((event) {
     if (kDebugMode) {
       print("${event.id} => ${event.path}");

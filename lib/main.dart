@@ -1,17 +1,23 @@
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
-import 'components/coffees.dart';
-import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'components/coffees.dart';
 import 'components/login.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
+  );
+  await FirebaseAppCheck.instance.activate(
+    webProvider: ReCaptchaV3Provider('recaptcha-v3-site-key'),
+    androidProvider: AndroidProvider.playIntegrity,
+    appleProvider: AppleProvider.appAttest,
   );
   runApp(const ProviderScope(child: MyApp()));
 }
@@ -49,8 +55,9 @@ class _MyHomePageState extends State<MyHomePage> {
         final String? uid = snapshot.data?.uid;
 
         if (uid != null) {
-          if(kDebugMode) {
-            print("Already logged in as '${snapshot.data?.displayName}', navigating home.");
+          if (kDebugMode) {
+            print(
+                "Already logged in as '${snapshot.data?.displayName}', navigating home.");
           }
           return Coffees();
         }
