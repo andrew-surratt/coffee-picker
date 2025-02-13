@@ -10,45 +10,40 @@ var coffeesCollection = FirebaseFirestore.instance
   return toJson(coffee);
 });
 
-var coffeeIndexDoc = FirebaseFirestore.instance
-    .collection('coffees')
-    .doc('all');
+var coffeeIndexDoc =
+    FirebaseFirestore.instance.collection('coffees').doc('all');
 
 Future<List<CoffeeIndex>> getCoffeeIndex() async {
-  return await coffeeIndexDoc
-      .get()
-      .then((value) {
-        if (kDebugMode) {
-          print({"coffeeIndex", value
-              .data()
-              ?.values});
-        }
-          return List.from(value
-              .data()
-              ?.values
-              .map((e) {
-                try {
-                  return CoffeeIndex(roaster: e?['roaster'], name: e?['name']);
-                } catch (err) {
-                  if (kDebugMode) {
-                    print({"Error parsing coffee index (skipping):", err});
-                  }
-                  return null;
+  return await coffeeIndexDoc.get().then((value) {
+    if (kDebugMode) {
+      print({"coffeeIndex", value.data()?.values});
+    }
+    return List.from(value
+            .data()
+            ?.values
+            .map((e) {
+              try {
+                return CoffeeIndex(roaster: e?['roaster'], name: e?['name']);
+              } catch (err) {
+                if (kDebugMode) {
+                  print({"Error parsing coffee index (skipping):", err});
                 }
-              })
-              .where((e) => e != null)
-              .toList() ?? [])
-          ;
-        });
+                return null;
+              }
+            })
+            .where((e) => e != null)
+            .toList() ??
+        []);
+  });
 }
 
-Future<void> upsertCoffeeIndex(String coffeeName, String roasterName, {bool createDoc = false}) async {
+Future<void> upsertCoffeeIndex(String coffeeName, String roasterName,
+    {bool createDoc = false}) async {
   if (createDoc) {
     await coffeeIndexDoc.set({});
   }
 
-  return await coffeeIndexDoc
-      .update({
+  return await coffeeIndexDoc.update({
     "$roasterName $coffeeName": {
       'roaster': roasterName,
       'name': coffeeName,
@@ -64,6 +59,12 @@ Future<List<Coffee>> getCoffee(String coffeeName) async {
     List<Coffee> coffees = event.docs.map(docToCoffee).toList();
     return coffees;
   });
+}
+
+Future<Coffee> getCoffeeByRef(String coffeeRef) async {
+  DocumentSnapshot<CoffeeCreateReq> doc =
+      await coffeesCollection.doc(coffeeRef).get();
+  return docToCoffee(doc);
 }
 
 Future<List<Coffee>> getCoffees(List<String> coffeeNames) async {

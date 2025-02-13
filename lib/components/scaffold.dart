@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/config.dart';
 import '../repositories/configs.dart';
+import 'my_reviews.dart';
 
 class ScaffoldBuilder extends ConsumerWidget {
   final Widget body;
@@ -16,13 +17,12 @@ class ScaffoldBuilder extends ConsumerWidget {
 
   final List<Widget>? appBarActions;
 
-  const ScaffoldBuilder({
-    super.key,
-    required this.body,
-    this.widgetTitle,
-    this.floatingActionButton,
-    this.appBarActions
-  });
+  const ScaffoldBuilder(
+      {super.key,
+      required this.body,
+      this.widgetTitle,
+      this.floatingActionButton,
+      this.appBarActions});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -56,12 +56,10 @@ class ScaffoldBuilder extends ConsumerWidget {
             child: DrawerHeader(
               decoration: BoxDecoration(color: theme.primaryColor),
               padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-              child: const Row(
-                  children: [
-                    Icon(Icons.coffee),
-                    Spacer(),
-                  ]
-              ),
+              child: const Row(children: [
+                Icon(Icons.coffee),
+                Spacer(),
+              ]),
             ),
           ),
           ListTile(
@@ -73,35 +71,45 @@ class ScaffoldBuilder extends ConsumerWidget {
                   MaterialPageRoute(builder: (context) => const Coffees()));
             },
           ),
-          if(config.value?.isComparisonChartEnabled ?? false) ListTile(
-            title: const Text('Compare'),
-            leading: const Icon(Icons.bar_chart),
+          ListTile(
+            title: const Text('My Reviews'),
+            leading: const Icon(Icons.rate_review),
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => ComparisonChart(chartComponents: [
-                        ChartComponent(ComponentName.price),
-                        ChartComponent(ComponentName.rating),
-                      ])));
+              Navigator.pushReplacement(context,
+                  MaterialPageRoute(builder: (context) => const MyReviews()));
             },
           ),
+          if (config.value?.isComparisonChartEnabled ?? false)
+            ListTile(
+              title: const Text('Compare'),
+              leading: const Icon(Icons.bar_chart),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => ComparisonChart(chartComponents: [
+                              ChartComponent(ComponentName.price),
+                              ChartComponent(ComponentName.rating),
+                            ])));
+              },
+            ),
           const Spacer(),
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 20),
-            child:ListTile(
-            title: const Text('Profile'),
-            leading: const Icon(Icons.person),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const UserProfile(),
-                  ));
-            },
-          )),
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: ListTile(
+                title: const Text('Profile'),
+                leading: const Icon(Icons.person),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const UserProfile(),
+                      ));
+                },
+              )),
         ],
       ),
     );
