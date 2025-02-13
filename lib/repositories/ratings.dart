@@ -19,6 +19,7 @@ Future<List<Rating>> getUserRatings(User? user) async {
   }
   return await ratingsCollection
       .where('userRef', isEqualTo: user.uid)
+      .orderBy('createdAt', descending: true)
       .get()
       .then((event) {
     return event.docs.map((e) => e.data()).toList();
@@ -30,7 +31,7 @@ Future<List<CoffeeWithRating>> getUserRatingsForCoffees(
   return await ratingsCollection
       .where('userRef', isEqualTo: user.uid)
       .where('coffeeRef', whereIn: coffees.map((e) => e.ref))
-      .orderBy('createdAt')
+      .orderBy('createdAt', descending: true)
       .get()
       .then((event) {
     var ratings = event.docs.map((r) => r.data()).toList();
@@ -57,7 +58,7 @@ Future<CoffeeWithRating> getUserRatingForCoffee(
   return await ratingsCollection
       .where('userRef', isEqualTo: user.uid)
       .where('coffeeRef', isEqualTo: coffee.ref)
-      .orderBy('createdAt')
+      .orderBy('createdAt', descending: true)
       .get()
       .then((event) {
     var ratings = event.docs.map((r) => r.data()).toList();
@@ -70,6 +71,7 @@ Future<CoffeeWithRating> getUserRatingForCoffee(
 Future<List<Rating>> getCoffeeRatings(Coffee coffee) async {
   return await ratingsCollection
       .where('coffeeRef', isEqualTo: coffee.ref)
+      .orderBy('createdAt', descending: true)
       .get()
       .then((event) {
     return event.docs.map((QueryDocumentSnapshot<Rating> e) {
@@ -98,12 +100,12 @@ Future<DocumentSnapshot<Rating>> addRating(Rating rating) async {
 
 Rating fromJson(Map<String, dynamic>? json) {
   return Rating(
-      userRef: json?['userRef'],
-      userName: json?['userName'],
-      coffeeRef: json?['coffeeRef'],
-      coffeeName: json?['coffeeName'],
-      rating: json?['rating'],
-      review: json?['review'],
+      userRef: json?['userRef'] ?? '',
+      userName: json?['userName'] ?? '',
+      coffeeRef: json?['coffeeRef'] ?? '',
+      coffeeName: json?['coffeeName'] ?? '',
+      rating: json?['rating'] ?? 0,
+      review: json?['review'] ?? '',
       aromaValue: json?['aromaValue'] ?? 5,
       acidityValue: json?['acidityValue'] ?? 5,
       sweetnessValue: json?['sweetnessValue'] ?? 5,
@@ -142,7 +144,7 @@ class Rating {
     required this.sweetnessValue,
     required this.bodyValue,
     required this.finishValue,
-    required this.createdAt,
+    this.createdAt,
   });
 
   final String userRef;
@@ -156,7 +158,7 @@ class Rating {
   final double sweetnessValue;
   final double bodyValue;
   final double finishValue;
-  final Timestamp createdAt;
+  final Timestamp? createdAt;
 }
 
 class CoffeeWithRating {

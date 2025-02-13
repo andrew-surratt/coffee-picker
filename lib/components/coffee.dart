@@ -1,5 +1,6 @@
 import 'package:coffee_picker/components/origin_text.dart';
 import 'package:coffee_picker/components/review.dart';
+import 'package:coffee_picker/components/review_card.dart';
 import 'package:coffee_picker/components/scaffold.dart';
 import 'package:coffee_picker/components/thumbnail.dart';
 import 'package:coffee_picker/providers/compare_coffees.dart';
@@ -7,7 +8,6 @@ import 'package:coffee_picker/providers/icons.dart';
 import 'package:coffee_picker/services/auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/config.dart';
@@ -175,82 +175,14 @@ class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
     ];
   }
 
-  List<Card> buildReview(List<Rating> reviews) {
+  List<ReviewCard> buildReview(List<Rating> reviews) {
     if (kDebugMode) {
       print("Building reviews for ${widget.coffee.name}: ${reviews.map((r) {
         return r.userName;
       }).join(", ")}");
     }
     return reviews.map((r) {
-      var reviewBody = Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2),
-            child: Text(r.userName,
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          ),
-          RatingBarIndicator(
-            rating: r.rating,
-            direction: Axis.horizontal,
-            itemSize: 20,
-            itemCount: 5,
-            itemBuilder: (context, _) => const Icon(
-              Icons.star,
-              color: Colors.amber,
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            spacing: 10,
-            children: [
-              Chip(
-                visualDensity: VisualDensity.compact,
-                padding: EdgeInsets.symmetric(horizontal: 1),
-                label: Text("Aroma ${r.aromaValue.round()}"),
-              ),
-              Chip(
-                visualDensity: VisualDensity.compact,
-                padding: EdgeInsets.symmetric(horizontal: 1),
-                label: Text("Acidity ${r.acidityValue.round()}"),
-              ),
-              Chip(
-                visualDensity: VisualDensity.compact,
-                padding: EdgeInsets.symmetric(horizontal: 1),
-                label: Text("Sweetness ${r.sweetnessValue.round()}"),
-              ),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            spacing: 15,
-            children: [
-              Chip(
-                visualDensity: VisualDensity.compact,
-                padding: EdgeInsets.symmetric(horizontal: 1),
-                label: Text("Body ${r.bodyValue.round()}"),
-              ),
-              Chip(
-                visualDensity: VisualDensity.compact,
-                padding: EdgeInsets.symmetric(horizontal: 1),
-                label: Text("Finish ${r.finishValue.round()}"),
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2),
-            child: r.review.isNotEmpty ? Text(r.review) : const Text('...'),
-          ),
-        ],
-      );
-      return Card(
-          child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: Row(
-                children: [reviewBody],
-              )));
+      return ReviewCard(rating: r);
     }).toList();
   }
 }
