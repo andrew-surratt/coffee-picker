@@ -28,6 +28,9 @@ GoogleService-Info.plist
 firebase_options.dart
 google-services.json
 **.log
+.firebaserc
+firebase.json
+.firebase
 
 # Miscellaneous
 *.class
@@ -96,7 +99,6 @@ google-services.json
 **/ios/Runner/GeneratedPluginRegistrant.*
 
 # Web related
-**/web/**/lib/generated_plugin_registrant.dart
 
 # Service account files
 svc-keyfile.json
