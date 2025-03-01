@@ -62,47 +62,56 @@ class _ReviewState extends State<Review> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Padding(
-            padding: edgeInsets,
-            child: RatingBar.builder(
-              initialRating: defaultRating,
-              minRating: 1,
-              direction: Axis.horizontal,
-              itemSize: 30,
-              allowHalfRating: true,
-              itemCount: 5,
-              itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
-              itemBuilder: (context, _) => const Icon(
-                Icons.star,
-                color: Colors.amber,
+          SizedBox(
+            width: 500,
+            child: Container(
+              padding: edgeInsets,
+              alignment: Alignment.center,
+              child: RatingBar.builder(
+                initialRating: defaultRating,
+                minRating: 1,
+                direction: Axis.horizontal,
+                itemSize: 30,
+                allowHalfRating: true,
+                itemCount: 5,
+                itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+                itemBuilder: (context, _) => const Icon(
+                  Icons.star,
+                  color: Colors.amber,
+                ),
+                onRatingUpdate: (rating) {
+                  setState(() {
+                    ratingController.text = rating.toString();
+                  });
+                },
               ),
-              onRatingUpdate: (rating) {
-                setState(() {
-                  ratingController.text = rating.toString();
-                });
-              },
             ),
           ),
           Padding(
               padding: edgeInsets,
-              child: buildSliderReview(_aromaSliderValue, 'Aroma')),
+              child:
+                  buildSliderReview(_aromaSliderValue, 'Aroma', 'Low to High')),
           Padding(
               padding: edgeInsets,
-              child: buildSliderReview(_aciditySliderValue, 'Acidity')),
+              child: buildSliderReview(
+                  _aciditySliderValue, 'Acidity', 'Low to High')),
           Padding(
               padding: edgeInsets,
-              child: buildSliderReview(_sweetnessSliderValue, 'Sweetness')),
+              child: buildSliderReview(
+                  _sweetnessSliderValue, 'Sweetness', 'Low to High')),
           Padding(
               padding: edgeInsets,
-              child: buildSliderReview(_bodySliderValue, 'Body')),
+              child: buildSliderReview(
+                  _bodySliderValue, 'Body', 'Light to Heavy')),
           Padding(
               padding: edgeInsets,
-              child: buildSliderReview(_finishSliderValue, 'Finish')),
+              child: buildSliderReview(
+                  _finishSliderValue, 'Finish', 'Short to Long')),
           Padding(
               padding: edgeInsets,
               child: buildFormFieldText(
                 controller: reviewController,
-                label: "Review",
+                label: "Review Notes",
                 hint: 'Good',
               )),
           Padding(
@@ -146,17 +155,23 @@ class _ReviewState extends State<Review> {
     );
   }
 
-  Widget buildSliderReview(TextEditingController field, String title) {
+  Widget buildSliderReview(
+      TextEditingController field, String title, String tooltip) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         SizedBox(width: 90, child: Text(title)),
+        Tooltip(
+            message: tooltip,
+            child: Icon(
+              Icons.info_outline,
+            )),
         Flexible(
             child: Slider(
           value: double.tryParse(field.value.text) ?? 5,
           min: 1,
           max: 10,
-          divisions: 10,
+          divisions: 9,
           label: field.value.text,
           onChanged: (double value) {
             setState(() {
