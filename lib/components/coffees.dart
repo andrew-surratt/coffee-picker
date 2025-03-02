@@ -28,7 +28,8 @@ class _CoffeesState extends ConsumerState<Coffees> {
   void initState() {
     super.initState();
     AsyncValue<Config> config = ref.read(configProvider);
-    coffees = getCoffeesByRoaster(config.value?.defaultRoasterQuery ?? defaultConfig.defaultRoasterQuery);
+    coffees = getCoffeesByRoaster(
+        config.value?.defaultRoasterQuery ?? defaultConfig.defaultRoasterQuery);
   }
 
   @override
@@ -36,6 +37,14 @@ class _CoffeesState extends ConsumerState<Coffees> {
     return FutureBuilder(
       future: coffees,
       builder: (BuildContext context, AsyncSnapshot<List<Coffee>> snapshot) {
+        var results = !snapshot.hasData ||
+                snapshot.connectionState == ConnectionState.waiting
+            ? Container(
+                padding: EdgeInsets.all(30),
+                alignment: Alignment.center,
+                child: CircularProgressIndicator())
+            : buildResults(context, snapshot);
+
         return ScaffoldBuilder(
             body: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -49,26 +58,31 @@ class _CoffeesState extends ConsumerState<Coffees> {
                     ),
                   ),
                   Expanded(
-                    child: buildResults(context, snapshot),
+                    child: results,
                   ),
                 ]),
             floatingActionButton: FloatingActionButton.small(
                 onPressed: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const CoffeeInput()),
+                      MaterialPageRoute(
+                          builder: (context) => const CoffeeInput()),
                     ),
                 child: const Icon(Icons.add)));
       },
     );
   }
 
-  ListView buildResults(BuildContext context, AsyncSnapshot<List<Coffee>> snapshot) {
+  ListView buildResults(
+      BuildContext context, AsyncSnapshot<List<Coffee>> snapshot) {
     return ListView(
       padding: const EdgeInsets.all(10),
-      children: snapshot.data?.map((e) => SizedBox(
-        height: 70,
-        child: buildCard(context, e),
-      )).toList() ?? [],
+      children: snapshot.data
+              ?.map((e) => SizedBox(
+                    height: 70,
+                    child: buildCard(context, e),
+                  ))
+              .toList() ??
+          [],
     );
   }
 
@@ -167,7 +181,11 @@ class _CoffeesState extends ConsumerState<Coffees> {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Thumbnail(thumbnailPath: coffee.thumbnailPath),
-          Expanded(child: Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: info,)),
+          Expanded(
+              child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: info,
+          )),
         ],
       ),
     );
