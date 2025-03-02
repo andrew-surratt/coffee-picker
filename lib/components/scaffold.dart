@@ -1,6 +1,8 @@
 import 'package:coffee_picker/components/coffees.dart';
 import 'package:coffee_picker/components/comparison_chart.dart';
 import 'package:coffee_picker/components/user_profile.dart';
+import 'package:coffee_picker/services/auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -28,6 +30,7 @@ class ScaffoldBuilder extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     var themeData = Theme.of(context);
     final AsyncValue<Config> config = ref.watch(configProvider);
+    User? user = getUser();
 
     return Scaffold(
       appBar: AppBar(
@@ -41,7 +44,7 @@ class ScaffoldBuilder extends ConsumerWidget {
         child: Center(child: body),
       ),
       floatingActionButton: floatingActionButton,
-      drawer: buildDrawer(context, config),
+      drawer: user != null ? buildDrawer(context, config) : null,
     );
   }
 
