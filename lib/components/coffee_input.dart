@@ -1,6 +1,6 @@
-import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:coffee_picker/components/image_box.dart';
 import 'package:coffee_picker/components/scaffold.dart';
 import 'package:coffee_picker/providers/coffees_index.dart';
 import 'package:coffee_picker/providers/origins_index.dart';
@@ -10,18 +10,14 @@ import 'package:coffee_picker/repositories/coffee_images.dart';
 import 'package:coffee_picker/repositories/origins.dart';
 import 'package:coffee_picker/repositories/roasters.dart';
 import 'package:coffee_picker/repositories/taste_notes.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_cropper/image_cropper.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:textfield_tags/textfield_tags.dart';
 
 import '../repositories/coffees.dart';
 import '../services/coffee.dart';
 import '../services/finance.dart';
 import '../utils/forms.dart';
-import '../utils/uuid.dart';
 import 'coffee.dart';
 import 'multi_tag_field.dart';
 
@@ -50,14 +46,13 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
   ];
   bool isOrganic = false;
   bool isFairTrade = false;
-  Uint8List? _image;
-  CroppedFile? _croppedFile;
+  Uint8List? image;
+  String? imageExtension;
 
   @override
   Widget build(BuildContext context) {
     AsyncValue<List<String>> tasteNotes = ref.watch(tasteNotesProvider);
     AsyncValue<List<String>> roastersIndex = ref.watch(roastersIndexProvider);
-    var uiSettings = buildCropperUISettings(context);
 
     const itemPadding = EdgeInsets.symmetric(vertical: 5, horizontal: 5);
     var inputForm = Form(
@@ -86,15 +81,17 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
             ),
             Padding(
               padding: itemPadding,
-              child: buildImageUploadBox(uiSettings),
+              child: buildImageUploadBox(),
             ),
             Padding(
-              padding: itemPadding,
-              child: DynamicAutoCompleteTags(
-                dynamicTagController: tasteNotesController,
-                initialTags: tasteNotes.value?.map((t) => DynamicTagData(t, null)).toList() ?? [],
-              )
-            ),
+                padding: itemPadding,
+                child: DynamicAutoCompleteTags(
+                  dynamicTagController: tasteNotesController,
+                  initialTags: tasteNotes.value
+                          ?.map((t) => DynamicTagData(t, null))
+                          .toList() ??
+                      [],
+                )),
             Padding(
               padding: itemPadding,
               child: buildFormFieldDouble(
@@ -159,91 +156,24 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
     );
   }
 
-  Row buildImageUploadBox(List<PlatformUiSettings> uiSettings) {
+  Row buildImageUploadBox() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         Flexible(
           flex: 1,
-          child: SizedBox(
-            width: 110,
-            height: 110,
-            child: _image == null
-                ? buildImageUploadButton(uiSettings: uiSettings)
-                : Image.memory(
-                    _image!,
-                    fit: BoxFit.scaleDown,
-                    repeat: ImageRepeat.noRepeat,
-                    width: 460,
-                  ),
+          child: ImageBox(
+            onChanged: ({required String extension, Uint8List? data}) {
+              setState(() {
+                image = data;
+                imageExtension = extension;
+              });
+            },
           ),
         ),
         const Spacer(flex: 2)
       ],
     );
-  }
-
-  FilledButton buildImageUploadButton(
-      {List<PlatformUiSettings> uiSettings = const []}) {
-    return FilledButton.tonalIcon(
-      onPressed: () {
-        onUploadImage();
-      },
-      icon: const Icon(
-        Icons.add,
-        size: 15,
-      ),
-      label: const Text(
-        'Upload Image',
-        style: TextStyle(fontSize: 12),
-      ),
-      style: FilledButton.styleFrom(
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(5.0), side: const BorderSide()),
-      ),
-    );
-  }
-
-  void onUploadImage({
-    List<PlatformUiSettings> uiSettings = const [],
-  }) async {
-    XFile? image = await ImagePicker().pickImage(
-      source: ImageSource.gallery,
-      maxHeight: 460,
-      maxWidth: 460,
-    );
-
-    if (image == null) {
-      return null;
-    }
-
-    CroppedFile? croppedFile = await ImageCropper().cropImage(
-      sourcePath: image.path,
-      aspectRatio: CropAspectRatio(ratioX: 1,ratioY: 1),
-      uiSettings: uiSettings,
-    );
-
-    var croppedData = await croppedFile?.readAsBytes();
-    setState(() {
-      _croppedFile = croppedFile;
-      _image = croppedData;
-    });
-  }
-
-  List<PlatformUiSettings> buildCropperUISettings(BuildContext context) {
-    return [
-      AndroidUiSettings(
-        toolbarTitle: 'Crop',
-        initAspectRatio: CropAspectRatioPreset.square,
-        lockAspectRatio: true,
-      ),
-      IOSUiSettings(
-        title: 'Crop',
-      ),
-      WebUiSettings(
-        context: context,
-      ),
-    ];
   }
 
   List<Widget> buildOriginFields() {
@@ -314,9 +244,8 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder:
-                       (context) => CoffeeInfo(coffee: coffee),
-                ));
+                    builder: (context) => CoffeeInfo(coffee: coffee),
+                  ));
             }
           });
         },
@@ -339,11 +268,9 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
         .toList();
 
     String uploadedPath = '';
-    if (_croppedFile != null) {
-      var croppedPath = _croppedFile!.path;
-      String fileExt = croppedPath.split('.').last;
-      uploadedPath = "${uuidV4()}/thumbnail.$fileExt";
-      uploadImage(File(croppedPath), uploadedPath);
+    if (image != null && imageExtension != null) {
+      uploadedPath = createUploadPath(imageExtension!);
+      uploadImageData(image!, uploadedPath);
     }
 
     var coffeeName = name.value.text;
@@ -352,7 +279,8 @@ class _CoffeeInput extends ConsumerState<CoffeeInput> {
       roaster: roaster,
       name: coffeeName,
       costPerOz: costPerOz,
-      tastingNotes: tasteNotesController.getTags?.map((e) => e.tag).toList() ?? [],
+      tastingNotes:
+          tasteNotesController.getTags?.map((e) => e.tag).toList() ?? [],
       usdaOrganic: isOrganic,
       fairTrade: isFairTrade,
       thumbnailPath: uploadedPath,

@@ -26,13 +26,13 @@ class Thumbnail extends StatelessWidget {
             return buildSizedBox(context: context);
           }
           return buildSizedBox(
-            context: context,
+              context: context,
               widget: Image.memory(
-            snapshot.data!,
-            fit: BoxFit.scaleDown,
-            repeat: ImageRepeat.noRepeat,
-            width: 256,
-          ));
+                snapshot.data!,
+                fit: BoxFit.contain,
+                repeat: ImageRepeat.noRepeat,
+                width: 256,
+              ));
         });
   }
 
@@ -41,13 +41,13 @@ class Thumbnail extends StatelessWidget {
     required BuildContext context,
   }) {
     var theme = Theme.of(context);
-    var childWidget = widget ?? DecoratedBox(
-      decoration:
-      BoxDecoration(
-        color: theme.disabledColor,
-      ),
-      child: const Icon(Icons.coffee),
-    );
+    var childWidget = widget ??
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: theme.disabledColor,
+          ),
+          child: const Icon(Icons.coffee),
+        );
     return AspectRatio(
       aspectRatio: 1,
       child: childWidget,
