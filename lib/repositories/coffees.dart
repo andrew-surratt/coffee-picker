@@ -119,6 +119,12 @@ Future<Coffee> addCoffee(CoffeeCreateReq coffee) async {
   });
 }
 
+Future<void> updateCoffeeImage(String coffeeRef, String thumbnailPath) async {
+  return await coffeesCollection.doc(coffeeRef).update({
+    'thumbnailPath': thumbnailPath,
+  });
+}
+
 CoffeeCreateReq fromJson(Map<String, dynamic>? json) {
   return CoffeeCreateReq(
     roaster: json?['roaster'] ?? '',

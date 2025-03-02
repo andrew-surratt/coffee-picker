@@ -1,3 +1,4 @@
+import 'package:coffee_picker/components/image_box.dart';
 import 'package:coffee_picker/components/origin_text.dart';
 import 'package:coffee_picker/components/review.dart';
 import 'package:coffee_picker/components/review_card.dart';
@@ -11,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/config.dart';
+import '../repositories/coffee_images.dart';
 import '../repositories/coffees.dart';
 import '../repositories/configs.dart';
 import '../repositories/ratings.dart';
@@ -29,6 +31,7 @@ enum MenuItem { addToComparison }
 class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
   ExpansionTileController expansionTileController = ExpansionTileController();
   late List<Rating> ratings = [];
+  Uint8List? image;
 
   @override
   void initState() {
@@ -55,7 +58,21 @@ class _CoffeeInfo extends ConsumerState<CoffeeInfo> {
         children: [
           Flexible(
             flex: 1,
-            child: Thumbnail(thumbnailPath: widget.coffee.thumbnailPath),
+            child: widget.coffee.thumbnailPath.isNotEmpty
+                ? Thumbnail(thumbnailPath: widget.coffee.thumbnailPath)
+                : ImageBox(
+                    image: image,
+                    onChanged: ({required String extension, Uint8List? data}) {
+                      setState(() {
+                        image = data;
+                        if (data != null) {
+                          String uploadedPath = createUploadPath(extension);
+                          uploadImageData(data, uploadedPath);
+                          updateCoffeeImage(widget.coffee.ref, uploadedPath);
+                        }
+                      });
+                    },
+                  ),
           ),
           Flexible(
             flex: 1,
